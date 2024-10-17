@@ -1,174 +1,323 @@
 <template>
   <div id="home">
-      <!-- 最上方菜单栏 -->
-     <el-menu class="custom-menu" mode="horizontal" default-active="1" text-color="aliceblue" active-text-color="#409EFF">
-    <!-- 左侧Logo -->
-    <div class="header-left" style="margin-right: 10vw;">
+    <!-- 最上方菜单栏 -->
+    <el-menu class="custom-menu" mode="horizontal" default-active="1" text-color="aliceblue"
+      active-text-color="#409EFF">
+      <!-- 左侧Logo -->
+      <div class="header-left" style="margin-right: 10vw;">
         <img src="@/assets/logo.png" alt="智慧课程平台Logo" />
-    </div>
-    <!-- 菜单项 -->
-    <el-menu-item index="1" @click="currentWeb='课程列表'">课程列表</el-menu-item>
-    <el-menu-item index="2" @click="currentWeb='课程表'">课程表</el-menu-item>
-    <!-- 右侧头像 -->
-    <div class="header-right" style="margin-left: 50vw;">
-          <el-avatar :src="userAvatar" />
-          <el-button type="text" @click="logout" style="color:aliceblue">退出</el-button>
-    </div>
+      </div>
+      <!-- 菜单项 -->
+      <el-menu-item index="1" @click="currentWeb = '课程列表'">课程列表</el-menu-item>
+      <el-menu-item index="2" @click="currentWeb = '课程表'">课程表</el-menu-item>
+      <!-- 右侧头像 -->
+      <div class="header-right" style="margin-left: 50vw;">
+        <el-avatar :src="userAvatar" />
+        <el-button class="exit" type="text" @click="logout">退出</el-button>
+      </div>
     </el-menu>
     <div v-if="currentWeb === '课程列表'">
       <!-- 网页主要内容 -->
       <div class="container">
-    <!-- 左侧个人信息卡片 -->
-    <el-card class="card-info" shadow="always" style="width: 25vw; display: inline-block;">
-      <div slot="header" class="clearfix">
-        <div class="decoration"></div>
-        <span>个人信息</span>
-      </div>
-      <div class="user-info">
-        <p>用户名: {{userName}}</p>
-        <p>未读通知: {{unreadNotifications}}</p>
-      </div>
-    </el-card>
-
-    <!-- 中间课程列表卡片 -->
-    <el-card class="card-list" shadow="always" style="width: calc(50% - 20px); display: inline-block; margin: 0 10px;">
-      <div slot="header">
-        <div class="decoration"></div>
-        <span>课程列表</span>
-      </div>
-      <el-row :gutter="20">
-        <el-col v-for="(course, index) in courses" :key="index" :span="6">
-          <el-card shadow="hover" @click="handleCourseClick(course)">
-            <img :src="course.image" class="course-image" alt="课程图片" />
-            <div class="course-info">
-              <p>{{course.name}}</p>
-              <p>课程号: {{course.courseNumber}}</p>
-              <p>课序号: {{course.classNumber}}</p>
+        <!-- 左侧个人信息和消息总览卡片 -->
+        <el-card class="card_info_message" shadow="never"
+          style="width: 25vw; height: 80vh;display: flex; flex-direction: column;">
+          <!-- 个人信息卡片 -->
+          <el-card class="card-info" shadow="always" style="width: 100%;height: 35vh; margin-bottom: 3vh;">
+            <div class="span-title">
+              <span class="span-decoration">|</span>
+              个人信息
+            </div>
+            <div class="profile-info">
+              <!-- 头像上传 -->
+              <div class="avatar-upload">
+                <el-upload class="avatar-uploader"
+                  action="https://apifoxmock.com/m1/4767131-4420546-default/api/avatar_upload"
+                  accept=".jpg, .jpeg, .png" :show-file-list="false" :on-success="handleAvatarUploadSuccess"
+                  :on-error="handleAvatarUploadError" :before-upload="beforeAvatarUpload">
+                  <img :src="userAvatar" alt="Avatar" />
+                </el-upload>
+              </div>
+              <!-- 个人信息展示 -->
+              <div class="profile-details" style="font-size:12px;">
+                <p><strong>姓名:</strong> {{ name }}</p>
+                <p><strong>身份:</strong> {{ identity }}</p>
+                <p><strong>学院:</strong> {{ college }}</p>
+                <p><strong>邮箱:</strong> {{ email }}</p>
+                <p><strong>电话:</strong> {{ phone }}</p>
+              </div>
             </div>
           </el-card>
-        </el-col>
-      </el-row>
-    </el-card>
 
-    <!-- 右侧通知栏卡片 -->
-    <el-card class="card-course" shadow="always" style="width: 25vw; display: inline-block;">
-      <div slot="header">
-        <div class="decoration"></div>
-        <span>通知公告</span>
+          <!-- 消息总览卡片 -->
+          <el-card class="card-message" shadow="always" style="width: 100%;height: 35vh;">
+            <div class="span-title">
+              <span class="span-decoration">|</span>
+              消息总览
+            </div>
+            <div>
+              <p>未读通知: {{ unreadNotifications }}</p>
+              <p>未读课程消息: {{ unreadMessages }}</p>
+            </div>
+          </el-card>
+        </el-card>
+
+        <!-- 中间课程列表卡片 -->
+        <el-card class="card-course" shadow="always"
+          style="width: calc(50% - 20px);height: 80vh; display: inline-block; margin: 0 10px;">
+          <div class="span-title">
+            <span class="span-decoration">|</span>
+            课程列表
+          </div>
+          <el-row :gutter="20">
+            <el-col v-for="(course, index) in courses" :key="index" :span="6">
+              <el-card shadow="hover" @click="handleCourseClick(course)" style="font-size: 12px;">
+                <img :src="course.image" class="course-image" alt="课程图片" />
+                <div class="course-info">
+                  <p>{{ course.name }}</p>
+                  <p>课程号: {{ course.courseNumber }}</p>
+                  <p>课序号: {{ course.classNumber }}</p>
+                </div>
+              </el-card>
+            </el-col>
+          </el-row>
+        </el-card>
+
+        <!-- 右侧通知栏和日期卡片 -->
+        <el-card class="card_notice_date" shadow="never"
+          style="width: 25vw;height: 80vh; display: flex; flex-direction: column;">
+          <el-card class="card-notice" shadow="always" style="width: 100%;height: 40vh;margin-bottom: 10px;">
+            <div class="span-title">
+              <span class="span-decoration">|</span>
+              通知公告
+            </div>
+            <el-table max-height="30vh" :data="notice" :show-header="false" stripe="true" show-overflow-tooltip="true">
+              <el-table-column fixed="left" property="time" label="时间" width="120">
+                <template v-slot="scope">
+                  <div @click="handleNoticeClick(scope.row)">
+                    {{ scope.row.time }}
+                  </div>
+                </template>
+              </el-table-column>
+              <el-table-column property="title" label="标题">
+                <template v-slot="scope">
+                  <div @click="handleNoticeClick(scope.row)">
+                    {{ scope.row.title }}
+                  </div>
+                </template>
+              </el-table-column>
+            </el-table>
+            <div v-if="notice.length === 0" style="text-align: center; margin-top: 100px;">
+              无
+            </div>
+          </el-card>
+          <el-card class="card-date" shadow="always" style="width: 100%;height: 40vh;"
+            :body-style="{ padding: '0px !important' }">
+            <el-calendar style="width: 100%;height:100;"></el-calendar>
+          </el-card>
+        </el-card>
       </div>
-      <el-table :data="notice" @row-click="handleNoticeClick">
-        <el-table-column property="time" label="" width="120" />
-        <el-table-column property="title" label="" />
-      </el-table>
-      <div v-if="notice.length === 0" style="text-align: center; margin-top: 100px;">
-        无
-      </div>
-    </el-card>
     </div>
-    </div>
-   </div>
-  </template>
-  
-  <script>  
+  </div>
+</template>
+
+<script>
 import avatarImg from '@/assets/avatar.jpg';
 import courseImg from '@/assets/course.jpg';
 
-  export default {
-    data() {
-        return {
-            currentWeb:'课程列表',
-            userAvatar:avatarImg, // 用户头像URL
-            userName:'张三', // 用户名
-            unreadNotifications:0, // 未读通知数
-            courses:[ // 课程列表数据
-                { image: courseImg, name: '计算机科学导论', courseNumber: 'CS101', classNumber: '001' },
-                { image: courseImg, name: '计算机科学导论', courseNumber: 'CS101', classNumber: '001' },
-                ],
-            notice:[{time:'2024-02-23',title:'智慧课程平台操作手册'}],
-        }
+export default {
+  data() {
+    return {
+      name: '',
+      identity: '',
+      college: '',
+      email: sessionStorage.getItem('userInfo'),
+      phone: '',
+
+      currentWeb: '课程列表',
+      userAvatar: avatarImg, // 用户头像URL
+      unreadMessages: 0, // 用户名
+      unreadNotifications: 0, // 未读通知数
+      courses: [ // 课程列表数据
+        { image: courseImg, name: '专业课程综合实训III', courseNumber: 'P310002B', classNumber: '02' },
+        { image: courseImg, name: '用户界面设计与评价', courseNumber: 'M410023B', classNumber: '01' },
+      ],
+      notice: [{ time: '2024-10-01', title: '智慧课程平台操作手册' }],
+    }
+  },
+  mounted() {
+    this.fetchCourse();
+    this.fetchNotice();
+  },
+  methods: {
+    async convertUrlToBase64(url) {
+      const response = await fetch(url)
+      const blob = await response.blob()
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onloadend = () => resolve(reader.result)
+        reader.onerror = reject
+        reader.readAsDataURL(blob)
+      })
     },
-    mounted(){
-        this.fetchCourse();
-        this.fetchNotice();
+
+    async fetchProfileInfo() {
+      console.log(this.email)
+      this.axios.get('https://apifoxmock.com/m1/4767131-4420546-default/api/get_profile_info', { params: { email: this.email } })
+        .then(async (response) => {
+          this.uid = response.data.uid
+          this.name = response.data.name
+          this.organization = response.data.organization
+          if (response.data.avatarUrl) {
+            this.avatarUrl = response.data.avatarUrl // 如果后端返回了新的头像URL，则更新原始的URL  
+            // 调用convertUrlToBase64函数将URL转换为Base64  
+            // this.avatarBase64 = await this.convertUrlToBase64(this.avatarUrl);
+            // this.avatarUrl = this.avatarBase64;
+          }
+        }).catch((error) => {
+          console.error('Error fetching profile info:', error)
+        })
     },
-    methods: {
-        fetchCourse(){
-
-        },
-        fetchNotice(){
-
-        },
-        logout(){
-            console.log('退出被点击');
-
-        },
-        handleCourseClick(course) {
-            console.log('课程被点击:', course);
-
-        },
-        handleNoticeClick(row, event, column){
-            console.log('通知被点击:', row, event, column);
-
-        }
+    handleAvatarUploadSuccess(response, file) {
+      // 假设服务器返回的数据中包含新的头像URL  
+      if (response.avatarUrl) {
+        console.log(response.avatarUrl)
+        this.avatarUrl = response.avatarUrl
+        // 调用convertUrlToBase64函数将URL转换为Base64  
+        // this.avatarBase64 = this.convertUrlToBase64(this.avatarUrl)
+        // this.avatarUrl = this.avatarBase64
+        this.$message.success(`${file.name} 上传成功`)
+      }
+      /* convertUrlToBase64('https://example.com/path/to/image.jpg')  
+      .then(base64 => {  
+        console.log(base64); // 输出Base64编码的图片数据  
+        // 你可以将这个Base64编码赋值给img标签的src属性，或者发送到后端  
+      })  
+      .catch(error => {  
+        console.error('Error converting URL to Base64:', error);  
+      });*/
+      else this.avatarUrl = 'logo.jpg';
     },
-  }
+    handleAvatarUploadError(err, file) {
+      this.$message.error(`${file.name} 上传失败`)
+    },
+    beforeAvatarUpload(file) {
+      // 可以在这里添加文件类型和大小的验证逻辑  
+      let sizeByMb = file.size / 1024 / 1024;
+      if (sizeByMb > 2) {
+        this.$message.warning("上传文件不能超过2M")
+        return false
+      }
+      if (file.type != 'image/jpeg' && file.type != 'image/png') {
+        this.$message.warning("只能上传图片")
+        return false
+      }
+      return true
+    },
 
-  </script>
-  
-  <style scoped>
-  #home {
-  display: fixed;
-  min-height:100vh;
-  background-image:url("@/assets/background.jpg");
-  background-size:cover;
+    fetchCourse() {
 
-  }
-  .custom-menu {
-  display: flex;
-  align-items: center; /* 垂直居中对齐 */
-  height: 10vh; /* 自定义菜单栏高度 */
-  background: rgba(5, 44, 102, 0.9);
-  padding: 0 20px; /* 左右内边距，用于内容与边缘的间距 */
+    },
+    fetchNotice() {
+
+    },
+    logout() {
+      console.log('退出被点击');
+
+    },
+    handleCourseClick(course) {
+      console.log('课程被点击:', course);
+
+    },
+    handleNoticeClick(row) {
+      console.log('通知被点击:', row.time, row.title);
+
+    }
+  },
 }
 
-  .header-left, .header-right {
-    /* 控制logo和头像的大小和样式 */
-    display: flex;
-    align-items: center;
-  }
+</script>
 
-  .header-left img, .header-right .el-avatar {
-    width: 40px; /* 根据需要调整logo和头像的宽度 */
-    height: 40px;
-    margin: 0 10px; /* 控制logo和头像之间的间距 */
-  }
+<style scoped>
+#home {
+  display: fixed;
+  min-height: 100vh;
+  background-image: url("@/assets/background.jpg");
+  background-size: cover;
 
+}
+
+.custom-menu {
+  display: flex;
+  align-items: center;
+  /* 垂直居中对齐 */
+  height: 10vh;
+  /* 自定义菜单栏高度 */
+  background: rgba(5, 44, 102, 0.9);
+  padding: 0 20px;
+  /* 左右内边距，用于内容与边缘的间距 */
+}
+
+.el-menu-item.is-active {
+  background-color: rgba(0, 34, 87, 0.8) !important
+}
+
+.header-left,
+.header-right {
+  /* 控制logo和头像的大小和样式 */
+  display: flex;
+  align-items: center;
+}
+
+.header-left img,
+.header-right .el-avatar {
+  width: 40px;
+  /* 根据需要调整logo和头像的宽度 */
+  height: 40px;
+  margin: 0 10px;
+  /* 控制logo和头像之间的间距 */
+}
+
+.exit {
+  color: aliceblue;
+}
+
+.exit:hover {
+  color: #409EFF;
+}
 
 .container {
   display: flex;
   justify-content: space-between;
-  width:80%;
-  margin-left:10%;
+  width: 80%;
+  margin-left: 10%;
   margin-top: 10px;
 }
 
-.decoration {
-    width: 20px; /* 矩形宽度 */
-    height: 100%; /* 与容器等高 */
-    background-color: #4CAF50; /* 矩形颜色，可自定义 */
-    margin-right: 10px; /* 与文字间距 */
-    position: relative;
-    clip-path: polygon(0% 0%, 100% 0%, 100% 75%, 50% 100%, 0% 75%);
-    /* 上述clip-path创建了一个尖角在底部的矩形，模仿书签形状 */
-  }
-
-.card-info, .card-list, .card-course {
-    height:80vh;
-    background: rgba(255, 255, 255, 0.95);
+.span-decoration {
+  color: rgba(255, 255, 255, 0);
+  background-color: rgba(16, 163, 255, 0.829);
+  margin-right: 2px;
+  position: relative;
 }
 
-.user-info {
-  text-align: center;
+.span-title {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.card_info_message,
+.card_notice_date,
+.card-date {
+  border: 0;
+  background: rgba(255, 255, 255, 0);
+}
+
+.card-info,
+.card-message,
+.card-course,
+.card-notice {
+  background: rgba(255, 255, 255, 0.95);
 }
 
 .course-image {
@@ -179,4 +328,62 @@ import courseImg from '@/assets/course.jpg';
 .course-info {
   text-align: center;
 }
-  </style>
+
+.avatar-upload img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+}
+
+:deep(.el-calendar) {
+  font-size: 10px;
+}
+
+:deep(.el-calendar .next) {
+  border: none;
+}
+
+:deep(.el-calendar td) {
+  border: none;
+}
+
+:deep(.el-calendar .el-calendar-table thead th) {
+  height: 10px;
+}
+
+:deep(.el-calendar .el-calendar-day) {
+  height: 30px !important;
+  text-align: center;
+  border: none;
+}
+
+:deep(.el-calendar .el-calendar__header) {
+  justify-content: space-between;
+  color: aliceblue;
+  background-color: rgba(65, 129, 232, 0.6);
+}
+
+:deep(.el-calendar .el-calendar__header .el-calendar__title) {
+  width: 20%;
+}
+
+:deep(.el-calendar .el-calendar__header button) {
+  font-size: 10px;
+  color: aliceblue;
+  background-color: rgba(49, 108, 204, 0.7);
+}
+
+:deep(.el-calendar .el-button-group) {
+  width: 300px;
+  margin-left: 5px;
+}
+
+:deep(.el-calendar .el-calendar__body) {
+  background-color: rgba(255, 255, 255, 0.95);
+}
+
+:deep(.el-calendar .is-selected) {
+  background-color: #1d68d8d8;
+  color: #fff;
+}
+</style>
