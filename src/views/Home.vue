@@ -16,14 +16,14 @@
         <el-button class="exit" type="text" @click="logout">退出</el-button>
       </div>
     </el-menu>
-    <div v-if="currentWeb === '课程列表'">
+    <div v-show="currentWeb === '课程列表'">
       <!-- 网页主要内容 -->
-      <div class="container">
+      <div class="container1">
         <!-- 左侧个人信息和消息总览卡片 -->
         <el-card class="card_info_message" shadow="never"
           style="width: 25vw; height: 80vh;display: flex; flex-direction: column;">
           <!-- 个人信息卡片 -->
-          <el-card class="card-info" shadow="always" style="width: 100%;height: 35vh; margin-bottom: 3vh;">
+          <el-card class="card-info" shadow="always" style="width: 100%;height: 40vh; margin-bottom: 3vh;">
             <div class="span-title">
               <span class="span-decoration">|</span>
               个人信息
@@ -31,15 +31,39 @@
             <div class="profile-info">
               <!-- 头像上传 -->
               <div class="avatar-upload">
-                <el-upload class="avatar-uploader"
-                  action="https://apifoxmock.com/m1/4767131-4420546-default/api/avatar_upload"
-                  accept=".jpg, .jpeg, .png" :show-file-list="false" :on-success="handleAvatarUploadSuccess"
-                  :on-error="handleAvatarUploadError" :before-upload="beforeAvatarUpload">
-                  <img :src="userAvatar" alt="Avatar" />
-                </el-upload>
+                <img :src="userAvatar" alt="Avatar" style="margin-left: calc(50% - 25px)"
+                  @click="dialogVisible = !dialogVisible" />
+                <el-dialog v-model="dialogVisible" title="Tips" width="500">
+                  <span>是否选择上传新头像？</span>
+                  <template #footer>
+                    <div class="button-group">
+                      <el-button @click="dialogVisible = false">取消</el-button>
+                      <el-upload class="avatar-uploader"
+                        action="https://apifoxmock.com/m1/4767131-4420546-default/api/avatar_upload"
+                        accept=".jpg, .jpeg, .png" :show-file-list="false" :on-success="handleAvatarUploadSuccess"
+                        :on-error="handleAvatarUploadError" :before-upload="beforeAvatarUpload">
+                        <el-button type="primary" @click="dialogVisible = false">
+                          确认
+                        </el-button>
+                      </el-upload>
+                    </div>
+                  </template>
+                </el-dialog>
+              </div>
+              <div>
+                <router-link to="/favorite">
+                  <el-icon style="margin-left: 33%" @click="handleFavorite">
+                    <Star />
+                  </el-icon>
+                </router-link>
+                <router-link to="/notebook">
+                  <el-icon style="margin-left: 20%" @click="handleNotebook">
+                    <Notebook />
+                  </el-icon>
+                </router-link>
               </div>
               <!-- 个人信息展示 -->
-              <div class="profile-details" style="font-size:12px;">
+              <div class="profile-details" style="font-size:12px;margin-left: 15%">
                 <p><strong>姓名:</strong> {{ name }}</p>
                 <p><strong>身份:</strong> {{ identity }}</p>
                 <p><strong>学院:</strong> {{ college }}</p>
@@ -50,14 +74,14 @@
           </el-card>
 
           <!-- 消息总览卡片 -->
-          <el-card class="card-message" shadow="always" style="width: 100%;height: 35vh;">
+          <el-card class="card-message" shadow="always" style="width: 100%;height: 30vh;">
             <div class="span-title">
               <span class="span-decoration">|</span>
               消息总览
             </div>
-            <div>
-              <p>未读通知: {{ unreadNotifications }}</p>
-              <p>未读课程消息: {{ unreadMessages }}</p>
+            <div style="font-size: 14px;margin-top: 20px;">
+              <p><strong>未读通知:</strong> {{ unreadNotifications }}</p>
+              <p><strong>未读课程消息:</strong> {{ unreadMessages }}</p>
             </div>
           </el-card>
         </el-card>
@@ -71,10 +95,11 @@
           </div>
           <el-row :gutter="20">
             <el-col v-for="(course, index) in courses" :key="index" :span="6">
-              <el-card shadow="hover" @click="handleCourseClick(course)" style="font-size: 12px;">
+              <el-card shadow="hover" @click="handleCourseClick(course)"
+                style="font-size: 12px;height: 100%;background-color: rgba(174, 205, 255,0.6)">
                 <img :src="course.image" class="course-image" alt="课程图片" />
                 <div class="course-info">
-                  <p>{{ course.name }}</p>
+                  <p><strong>{{ course.name }}</strong></p>
                   <p>课程号: {{ course.courseNumber }}</p>
                   <p>课序号: {{ course.classNumber }}</p>
                 </div>
@@ -92,7 +117,7 @@
               通知公告
             </div>
             <el-table max-height="30vh" :data="notice" :show-header="false" stripe="true" show-overflow-tooltip="true">
-              <el-table-column fixed="left" property="time" label="时间" width="120">
+              <el-table-column property="time" label="时间" width="120">
                 <template v-slot="scope">
                   <div @click="handleNoticeClick(scope.row)">
                     {{ scope.row.time }}
@@ -107,7 +132,7 @@
                 </template>
               </el-table-column>
             </el-table>
-            <div v-if="notice.length === 0" style="text-align: center; margin-top: 100px;">
+            <div v-show="notice.length === 0" style="text-align: center; margin-top: 100px;">
               无
             </div>
           </el-card>
@@ -118,14 +143,31 @@
         </el-card>
       </div>
     </div>
+    <div v-if="currentWeb === '课程表'">
+      <el-card class="container2">
+
+      </el-card>
+    </div>
   </div>
 </template>
 
 <script>
+import { Star, Notebook } from '@element-plus/icons-vue'
 import avatarImg from '@/assets/avatar.jpg';
 import courseImg from '@/assets/course.jpg';
 
 export default {
+  components: {
+    Star,
+    Notebook,
+  },
+  name: 'CourseCard',
+  props: {
+    course: {
+      type: Object,
+      required: true
+    },
+  },
   data() {
     return {
       name: '',
@@ -133,6 +175,8 @@ export default {
       college: '',
       email: sessionStorage.getItem('userInfo'),
       phone: '',
+
+      dialogVisible: false,
 
       currentWeb: '课程列表',
       userAvatar: avatarImg, // 用户头像URL
@@ -146,6 +190,7 @@ export default {
     }
   },
   mounted() {
+    this.fetchProfileInfo();
     this.fetchCourse();
     this.fetchNotice();
   },
@@ -225,9 +270,22 @@ export default {
       console.log('退出被点击');
 
     },
+    handleFavorite() {
+      console.log('收藏被点击');
+    },
+    handleNotebook() {
+      console.log('笔记被点击');
+    },
     handleCourseClick(course) {
       console.log('课程被点击:', course);
-
+      this.$router.push({
+        name: 'CourseDetail',
+        params: { courseId: course.name },
+        query: {
+          courseNumber: course.courseNumber,
+          classNumber: course.classNumber
+        }
+      });
     },
     handleNoticeClick(row) {
       console.log('通知被点击:', row.time, row.title);
@@ -240,11 +298,11 @@ export default {
 
 <style scoped>
 #home {
-  display: fixed;
+  position: fixed;
+  width: 100vw;
   min-height: 100vh;
   background-image: url("@/assets/background.jpg");
   background-size: cover;
-
 }
 
 .custom-menu {
@@ -286,11 +344,11 @@ export default {
   color: #409EFF;
 }
 
-.container {
+.container1 {
   display: flex;
   justify-content: space-between;
   width: 80%;
-  margin-left: 10%;
+  margin-left: 12%;
   margin-top: 10px;
 }
 
@@ -320,6 +378,19 @@ export default {
   background: rgba(255, 255, 255, 0.95);
 }
 
+.avatar-upload img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+}
+
+.button-group {
+  display: flex;
+  justify-content: flex-end;
+  /* 按钮靠右对齐 */
+  gap: 10px;
+}
+
 .course-image {
   width: 100%;
   height: auto;
@@ -327,12 +398,6 @@ export default {
 
 .course-info {
   text-align: center;
-}
-
-.avatar-upload img {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
 }
 
 :deep(.el-calendar) {
@@ -385,5 +450,15 @@ export default {
 :deep(.el-calendar .is-selected) {
   background-color: #1d68d8d8;
   color: #fff;
+}
+
+.container2 {
+  display: flex;
+  justify-content: space-between;
+  width: 70%;
+  height: 80vh;
+  margin-left: 17%;
+  margin-top: 20px;
+  background-color: rgba(255, 255, 255, 0.95);
 }
 </style>

@@ -13,4 +13,8 @@ export default {
 </script>
 
 <style>
+:root {
+  margin: 0;
+  padding: 0;
+}
 </style>
