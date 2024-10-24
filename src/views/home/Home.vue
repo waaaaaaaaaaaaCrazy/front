@@ -4,14 +4,14 @@
     <el-menu class="custom-menu" mode="horizontal" default-active="1" text-color="aliceblue"
       active-text-color="#409EFF">
       <!-- 左侧Logo -->
-      <div class="header-left" style="margin-right: 10vw;">
+      <div class="header-left" style="margin-right: 10%;">
         <img src="@/assets/logo.png" alt="智慧课程平台Logo" />
       </div>
       <!-- 菜单项 -->
       <el-menu-item index="1" @click="currentWeb = '课程列表'">课程列表</el-menu-item>
       <el-menu-item index="2" @click="currentWeb = '课程表'">课程表</el-menu-item>
       <!-- 右侧头像 -->
-      <div class="header-right" style="margin-left: 50vw;">
+      <div class="header-right" style="margin-left: 50%;">
         <el-avatar :src="userAvatar" />
         <el-button class="exit" type="text" @click="logout">退出</el-button>
       </div>
@@ -33,7 +33,7 @@
               <div class="avatar-upload">
                 <img :src="userAvatar" alt="Avatar" style="margin-left: calc(50% - 25px)"
                   @click="dialogVisible = !dialogVisible" />
-                <el-dialog v-model="dialogVisible" title="Tips" width="500">
+                <el-dialog v-model="dialogVisible" title="OvO" width="500">
                   <span>是否选择上传新头像？</span>
                   <template #footer>
                     <div class="button-group">
@@ -53,12 +53,16 @@
               <div>
                 <router-link to="/favorite">
                   <el-icon style="margin-left: 33%" @click="handleFavorite">
-                    <Star />
+                    <el-tooltip class="box-item" effect="light" content="收藏" placement="top-end">
+                      <Star />
+                    </el-tooltip>
                   </el-icon>
                 </router-link>
                 <router-link to="/notebook">
                   <el-icon style="margin-left: 20%" @click="handleNotebook">
-                    <Notebook />
+                    <el-tooltip class="box-item" effect="light" content="笔记" placement="top-start">
+                      <Notebook />
+                    </el-tooltip>
                   </el-icon>
                 </router-link>
               </div>
@@ -153,15 +157,15 @@
 
 <script>
 import { Star, Notebook } from '@element-plus/icons-vue'
-import avatarImg from '@/assets/avatar.jpg';
-import courseImg from '@/assets/course.jpg';
+import defaultAvatarImg from '@/assets/avatar.jpg';
+import defaultCourseImg from '@/assets/course.jpg';
 
 export default {
   components: {
     Star,
     Notebook,
   },
-  name: 'CourseCard',
+  name: 'HomeView',
   props: {
     course: {
       type: Object,
@@ -179,20 +183,25 @@ export default {
       dialogVisible: false,
 
       currentWeb: '课程列表',
-      userAvatar: avatarImg, // 用户头像URL
+      userAvatar: defaultAvatarImg, // 用户头像URL
       unreadMessages: 0, // 用户名
       unreadNotifications: 0, // 未读通知数
+      courseImg: defaultCourseImg,// 课程图片URL
       courses: [ // 课程列表数据
-        { image: courseImg, name: '专业课程综合实训III', courseNumber: 'P310002B', classNumber: '02' },
-        { image: courseImg, name: '用户界面设计与评价', courseNumber: 'M410023B', classNumber: '01' },
+        { image: defaultCourseImg, name: '专业课程综合实训III', courseNumber: 'P310002B', classNumber: '02' },
+        { image: defaultCourseImg, name: '用户界面设计与评价', courseNumber: 'M410023B', classNumber: '01' },
       ],
-      notice: [{ time: '2024-10-01', title: '智慧课程平台操作手册' }],
+      notice: [
+        { id: '1', time: '2023-10-01', title: '通知1' },
+        { id: '2', time: '2023-10-02', title: '通知2' }
+      ],
     }
   },
   mounted() {
-    this.fetchProfileInfo();
-    this.fetchCourse();
-    this.fetchNotice();
+    this.fetchProfileInfo()
+    this.fetchUnreadNum()
+    this.fetchCourse()
+    this.fetchNotice()
   },
   methods: {
     async convertUrlToBase64(url) {
@@ -208,11 +217,13 @@ export default {
 
     async fetchProfileInfo() {
       console.log(this.email)
-      this.axios.get('https://apifoxmock.com/m1/4767131-4420546-default/api/get_profile_info', { params: { email: this.email } })
+      this.axios.get('https://apifoxmock.com/m1/5315127-4985126-default/api/get_profile_info', { params: { email: this.email } })
         .then(async (response) => {
-          this.uid = response.data.uid
           this.name = response.data.name
-          this.organization = response.data.organization
+          this.identity = response.data.identity
+          this.college = response.data.college
+          this.email = response.data.email
+          this.phone = response.data.phone
           if (response.data.avatarUrl) {
             this.avatarUrl = response.data.avatarUrl // 如果后端返回了新的头像URL，则更新原始的URL  
             // 调用convertUrlToBase64函数将URL转换为Base64  
@@ -225,9 +236,9 @@ export default {
     },
     handleAvatarUploadSuccess(response, file) {
       // 假设服务器返回的数据中包含新的头像URL  
-      if (response.avatarUrl) {
-        console.log(response.avatarUrl)
-        this.avatarUrl = response.avatarUrl
+      if (response.userAvatar) {
+        console.log(response.userAvatar)
+        this.userAvatar = response.userAvatar
         // 调用convertUrlToBase64函数将URL转换为Base64  
         // this.avatarBase64 = this.convertUrlToBase64(this.avatarUrl)
         // this.avatarUrl = this.avatarBase64
@@ -241,7 +252,7 @@ export default {
       .catch(error => {  
         console.error('Error converting URL to Base64:', error);  
       });*/
-      else this.avatarUrl = 'logo.jpg';
+      else this.userAvatar = defaultAvatarImg
     },
     handleAvatarUploadError(err, file) {
       this.$message.error(`${file.name} 上传失败`)
@@ -260,24 +271,43 @@ export default {
       return true
     },
 
-    fetchCourse() {
+    fetchUnreadNum(){
+      console.log(this.email)
+      this.axios.get('https://apifoxmock.com/m1/5315127-4985126-default/api/get_unread_num',
+        { params: { email: this.email } })
+        .then(response => {
+          this.unreadNotifications = response.data.unreadaNoticeNum,
+          this.unreadMessages = response.data.unreadaMessageNum
+        })
+    },
 
+    fetchCourse() {
+      console.log(this.email)
+      this.axios.get('https://apifoxmock.com/m1/5315127-4985126-default/api/get_course_list',
+        { params: { email: this.email } })
+        .then(response => {
+          this.courses = response.data.course
+        })
     },
     fetchNotice() {
-
+      this.axios.get('https://apifoxmock.com/m1/5315127-4985126-default/api/get_notice_list')
+        .then(response => {
+          this.notice = response.data.notice
+        })
     },
     logout() {
-      console.log('退出被点击');
-
+      console.log('退出被点击')
+      sessionStorage.clear();
+      this.$router.push('/login');
     },
     handleFavorite() {
-      console.log('收藏被点击');
+      console.log('收藏被点击')
     },
     handleNotebook() {
-      console.log('笔记被点击');
+      console.log('笔记被点击')
     },
     handleCourseClick(course) {
-      console.log('课程被点击:', course);
+      console.log('课程被点击:', course)
       this.$router.push({
         name: 'CourseDetail',
         params: { courseId: course.name },
@@ -285,11 +315,18 @@ export default {
           courseNumber: course.courseNumber,
           classNumber: course.classNumber
         }
-      });
+      })
     },
     handleNoticeClick(row) {
-      console.log('通知被点击:', row.time, row.title);
-
+      console.log('通知被点击:', row.time, row.title)
+      this.$router.push({
+        name: 'NoticeDetail',
+        params: { noticeId: row.id },
+        query: {
+          noticeTime: row.time,
+          noticeTitle: row.title
+        }
+      })
     }
   },
 }
@@ -314,10 +351,16 @@ export default {
   background: rgba(5, 44, 102, 0.9);
   padding: 0 20px;
   /* 左右内边距，用于内容与边缘的间距 */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  /* 添加底部阴影 */
 }
 
-.el-menu-item.is-active {
-  background-color: rgba(0, 34, 87, 0.8) !important
+:deep(.el-menu-item.is-active) {
+  background-color: rgba(0, 34, 87, 0.8)
+}
+
+:deep(.el-menu-item) {
+  --el-menu-hover-text-color: #409EFF
 }
 
 .header-left,
@@ -393,7 +436,7 @@ export default {
 
 .course-image {
   width: 100%;
-  height: auto;
+  max-height: 50%;
 }
 
 .course-info {
@@ -456,7 +499,7 @@ export default {
   display: flex;
   justify-content: space-between;
   width: 70%;
-  height: 80vh;
+  min-height: 80vh;
   margin-left: 17%;
   margin-top: 20px;
   background-color: rgba(255, 255, 255, 0.95);

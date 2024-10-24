@@ -1,8 +1,10 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
-import Home from '../views/Home.vue'
-import Favorite from '../views/Favorite.vue'
-import Notebook from '../views/Notebook.vue'
-import CourseDetail from '../views/CourseDetail.vue'
+import Login from '@/views/login/Login.vue'
+import Home from '@/views/home/Home.vue'
+import Favorite from '@/views/functions/Favorite.vue'
+import Notebook from '@/views/functions/Notebook.vue'
+import CourseDetail from '@/views/functions/CourseDetail.vue'
+import NoticeView from '@/views/functions/notice/NoticeView.vue'
 
 const routes = [
   {
@@ -11,8 +13,14 @@ const routes = [
     meta: { title: '正在重定向...' }
   },
   {
+    path: '/login',
+    name: 'Login',
+    component: Login,
+    meta: { title: '登录' }
+  },
+  {
     path: '/home',
-    name: Home,
+    name: 'Home',
     component: Home,
     meta: { title: '首页' }
   },
@@ -26,13 +34,26 @@ const routes = [
     path: '/notebook',
     name: 'Notebook',
     component: Notebook,
-    meta: { title: '笔记' }
+    meta: { title: '笔记集' }
   },
   {
     path: '/course/:courseId',
     name: 'CourseDetail',
     component: CourseDetail,
     meta: { title: '课程主页' }
+  },
+  {
+    path: '/notice',
+    name: 'NoticeView',
+    component: NoticeView,
+    meta: { title: '通知' },
+  },
+  {
+    path: '/notice/:noticeId',
+    name: 'NoticeDetail',
+    component: NoticeView,
+    meta: { title: '通知' },
+    props: true // 使组件能够接收路由参数作为 props
   },
 ]
 
