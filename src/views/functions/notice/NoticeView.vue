@@ -6,8 +6,9 @@
             <el-menu-item index="notice_detail" @click="currentView = 'notice_detail'">通知详情</el-menu-item>
             <el-menu-item index="notice_list" @click="currentView = 'notice_list'">通知列表</el-menu-item>
             <el-menu-item index="notice_annouce" @click="currentView = 'notice_annouce'">通知发布</el-menu-item>
+            <el-menu-item index="notice_drafts" @click="currentView = 'notice_drafts'">草稿箱</el-menu-item>
             <router-link to="/home">
-                <el-menu-item index="back">返回主页</el-menu-item>
+                <el-menu-item index="back" @click="clearInfo">返回主页</el-menu-item>
             </router-link>
         </el-menu>
 
@@ -15,21 +16,24 @@
         <div class="main-content">
             <NoticeDetail v-show="currentView === 'notice_detail'" :noticeId="noticeId" />
             <NoticeList v-show="currentView === 'notice_list'" @goToNoticeDetail="goToNoticeDetail" />
-            <NoticeAnnouce v-show="currentView === 'notice_annouce'" />
+            <NoticeAnnouce v-show="currentView === 'notice_annouce'" ref="noticeAnnouce" />
+            <NoticeDrafts v-show="currentView === 'notice_drafts'" @goToNoticeAnnouce="goToNoticeAnnouce" />
         </div>
     </div>
 </template>
 <script>
-import NoticeAnnouce from './components/NoticeAnnouce.vue'
 import NoticeDetail from './components/NoticeDetail.vue'
 import NoticeList from './components/NoticeList.vue'
+import NoticeAnnouce from './components/NoticeAnnouce.vue'
+import NoticeDrafts from './components/NoticeDrafts.vue'
 
 export default {
     name: 'noticeView',
     components: {
-        NoticeAnnouce,
         NoticeDetail,
-        NoticeList
+        NoticeList,
+        NoticeAnnouce,
+        NoticeDrafts
     },
     props: {
         noticeId: { // 从路由参数中接收 ID
@@ -41,6 +45,7 @@ export default {
         return {
             defaultView: '',
             currentView: 'notice_detail',
+            info: null, // 用于存储传递给 NoticeAnnouce 的 id
         }
     },
     mounted() {
@@ -61,6 +66,18 @@ export default {
         goToNoticeDetail() {
             this.currentView = 'notice_detail' // 切换到通知详情组件
         },
+        goToNoticeAnnouce(info) {
+            // 在这里接收从 NoticeDrafts 组件传递过来的id，并更新 info
+            this.info = info;
+            console.log('parent.notice:' + this.info)
+            this.$refs.noticeAnnouce.hasInfo = true
+            this.$refs.noticeAnnouce.initializeForm(info)
+            this.currentView = 'notice_annouce' // 切换到通知发布组件
+        },
+        clearInfo() {
+            this.info = null
+            console.log('info cleared')
+        }
     }
 }
 </script>
