@@ -12,7 +12,7 @@
       <el-menu-item index="2" @click="currentWeb = '课程表'">课程表</el-menu-item>
       <!-- 右侧头像 -->
       <div class="header-right" style="margin-left: 50%;">
-        <el-avatar :src="userAvatar" />
+        <el-avatar :src="userAvatar" @click="handleAvatarClick" />
         <el-button class="exit" type="text" @click="logout">退出</el-button>
       </div>
     </el-menu>
@@ -32,17 +32,17 @@
               <!-- 头像上传 -->
               <div class="avatar-upload">
                 <img :src="userAvatar" alt="Avatar" style="margin-left: calc(50% - 25px)"
-                  @click="dialogVisible = !dialogVisible" />
-                <el-dialog v-model="dialogVisible" title="OvO" width="500">
+                  @click="avatarDialogVisible = !avatarDialogVisible" />
+                <el-dialog v-model="avatarDialogVisible" title="OvO" width="500">
                   <span>是否选择上传新头像？</span>
                   <template #footer>
                     <div class="button-group">
-                      <el-button @click="dialogVisible = false">取消</el-button>
+                      <el-button @click="avatarDialogVisible = false">取消</el-button>
                       <el-upload class="avatar-uploader"
                         action="https://apifoxmock.com/m1/4767131-4420546-default/api/avatar_upload"
                         accept=".jpg, .jpeg, .png" :show-file-list="false" :on-success="handleAvatarUploadSuccess"
                         :on-error="handleAvatarUploadError" :before-upload="beforeAvatarUpload">
-                        <el-button type="primary" @click="dialogVisible = false">
+                        <el-button type="primary" @click="avatarDialogVisible = false">
                           确认
                         </el-button>
                       </el-upload>
@@ -85,22 +85,30 @@
             </div>
             <div style="font-size: 14px;margin-top: 20px;">
               <p><strong>未读通知:</strong> {{ unreadNotifications }}</p>
-              <p><strong>未读课程消息:</strong> {{ unreadMessages }}</p>
+              <p @click="messageDialogVisible = !messageDialogVisible"><strong>未读课程消息:</strong> {{ unreadMessages }}</p>
             </div>
+            <el-dialog v-model="messageDialogVisible" title="未读课程消息" width="500">
+              <div>
+                <el-table :data="courseMessage">
+                  <el-table-column property="name" label="课程名" />
+                  <el-table-column property="num" label="未读消息数" width="100" align="center" />
+                </el-table>
+              </div>
+            </el-dialog>
           </el-card>
         </el-card>
 
         <!-- 中间课程列表卡片 -->
         <el-card class="card-course" shadow="always"
-          style="width: calc(50% - 20px);height: 80vh; display: inline-block; margin: 0 10px;">
+          style="width: calc(50% - 20px); height: 80vh; display: inline-block; margin: 0 10px; overflow-y: auto;">
           <div class="span-title">
             <span class="span-decoration">|</span>
             课程列表
           </div>
-          <el-row :gutter="20">
-            <el-col v-for="(course, index) in courses" :key="index" :span="6">
+          <el-row :gutter="20" style="margin-top: 10px;">
+            <el-col v-for="(course, index) in courses" :key="index" :span="6" style="margin-bottom: 10px;">
               <el-card shadow="hover" @click="handleCourseClick(course)"
-                style="font-size: 12px;height: 100%;background-color: rgba(174, 205, 255,0.6)">
+                style="font-size: 12px; height: 100%; background-color: rgba(174, 205, 255, 0.6);">
                 <img :src="course.image" class="course-image" alt="课程图片" />
                 <div class="course-info">
                   <p><strong>{{ course.name }}</strong></p>
@@ -147,9 +155,20 @@
         </el-card>
       </div>
     </div>
-    <div v-if="currentWeb === '课程表'">
-      <el-card class="container2">
-
+    <div v-show="currentWeb === '课程表'">
+      <el-card class="container2" :body-style="{ padding: '0px !important' }">
+        <el-table :data="classSchedule" style="width: 100%; height:100%; font-size: 15px" stripe>
+          <el-table-column label="时间段" width="140px">
+            <template v-slot="scope">
+              {{ scope.row.time }}
+            </template>
+          </el-table-column>
+          <el-table-column v-for="(day, index) in days" :key="index" :label="day" width="130px">
+            <template v-slot="scope">
+              {{ scope.row[day] || '' }}
+            </template>
+          </el-table-column>
+        </el-table>
       </el-card>
     </div>
   </div>
@@ -180,13 +199,19 @@ export default {
       email: sessionStorage.getItem('userInfo'),
       phone: '',
 
-      dialogVisible: false,
+      avatarDialogVisible: false,
+      messageDialogVisible: false,
 
       currentWeb: '课程列表',
       userAvatar: defaultAvatarImg, // 用户头像URL
       unreadMessages: 0, // 用户名
       unreadNotifications: 0, // 未读通知数
       courseImg: defaultCourseImg,// 课程图片URL
+
+      courseMessage: [
+        { name: '专业课程综合实训III', num: 0 },
+        { name: '用户界面设计与评价', num: 0 }
+      ],
       courses: [ // 课程列表数据
         { image: defaultCourseImg, name: '专业课程综合实训III', courseNumber: 'P310002B', classNumber: '02' },
         { image: defaultCourseImg, name: '用户界面设计与评价', courseNumber: 'M410023B', classNumber: '01' },
@@ -195,11 +220,22 @@ export default {
         { id: '1', time: '2023-10-01', title: '通知1' },
         { id: '2', time: '2023-10-02', title: '通知2' }
       ],
+
+      days: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+      classSchedule: [
+        { time: '08:00-09:50', '周一': '自习', '周二': '自习', '周三': '自习', '周四': '自习', '周五': '自习', '周六': '', '周日': '' },
+        { time: '10:10-12:00', '周一': '自习', '周二': '自习', '周三': '自习', '周四': '自习', '周五': '自习', '周六': '', '周日': '' },
+        { time: '14:10-16:00', '周一': '自习', '周二': '自习', '周三': '自习', '周四': '自习', '周五': '自习', '周六': '', '周日': '' },
+        { time: '16:20-18:10', '周一': '自习', '周二': '自习', '周三': '自习', '周四': '自习', '周五': '自习', '周六': '', '周日': '' },
+        { time: '19:00-20:50', '周一': '自习', '周二': '自习', '周三': '自习', '周四': '自习', '周五': '自习', '周六': '', '周日': '' },
+        { time: '21:10-21:50', '周一': '自习', '周二': '自习', '周三': '自习', '周四': '自习', '周五': '自习', '周六': '', '周日': '' },
+      ]
     }
   },
   mounted() {
-    this.fetchProfileInfo()
+    this.fetchInfo()
     this.fetchUnreadNum()
+    this.fetchCourseMessage()
     this.fetchCourse()
     this.fetchNotice()
   },
@@ -215,7 +251,7 @@ export default {
       })
     },
 
-    async fetchProfileInfo() {
+    async fetchInfo() {
       console.log(this.email)
       this.axios.get('https://apifoxmock.com/m1/5315127-4985126-default/api/get_profile_info', { params: { email: this.email } })
         .then(async (response) => {
@@ -271,16 +307,23 @@ export default {
       return true
     },
 
-    fetchUnreadNum(){
+    fetchUnreadNum() {
       console.log(this.email)
       this.axios.get('https://apifoxmock.com/m1/5315127-4985126-default/api/get_unread_num',
         { params: { email: this.email } })
         .then(response => {
           this.unreadNotifications = response.data.unreadaNoticeNum,
-          this.unreadMessages = response.data.unreadaMessageNum
+            this.unreadMessages = response.data.unreadaMessageNum
         })
     },
-
+    fetchCourseMessage() {
+      console.log(this.email)
+      this.axios.get('https://apifoxmock.com/m1/5315127-4985126-default/api/get_course_message',
+        { params: { email: this.email } })
+        .then(response => {
+          this.courseMessage = response.data.courseMsg
+        })
+    },
     fetchCourse() {
       console.log(this.email)
       this.axios.get('https://apifoxmock.com/m1/5315127-4985126-default/api/get_course_list',
@@ -294,6 +337,10 @@ export default {
         .then(response => {
           this.notice = response.data.notice
         })
+    },
+    handleAvatarClick() {
+      console.log('个人信息被点击')
+      this.$router.push('/perinfo');
     },
     logout() {
       console.log('退出被点击')

@@ -1,6 +1,7 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import Login from '@/views/login/Login.vue'
 import Home from '@/views/home/Home.vue'
+import InfoView from '@/views/functions/personalInfo/InfoView.vue'
 import Favorite from '@/views/functions/Favorite.vue'
 import Notebook from '@/views/functions/Notebook.vue'
 import CourseDetail from '@/views/functions/CourseDetail.vue'
@@ -23,6 +24,12 @@ const routes = [
     name: 'Home',
     component: Home,
     meta: { title: '首页' }
+  },
+  {
+    path: '/perinfo',
+    name: 'InfoView',
+    component: InfoView,
+    meta: { title: '个人信息' }
   },
   {
     path: '/favorite',
