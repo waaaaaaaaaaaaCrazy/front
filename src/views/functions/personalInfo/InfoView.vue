@@ -1,7 +1,7 @@
 <template>
     <div class="function">
         <!-- 左侧竖菜单栏 -->
-        <el-menu :default-active="defaultView" class="side-menu" background-color="#545c64" text-color="#fff"
+        <el-menu :default-active="currentView" class="side-menu" background-color="#545c64" text-color="#fff"
             active-text-color="#00ffbb">
             <el-menu-item index="personal_info" @click="currentView = 'personal_info'">个人信息</el-menu-item>
             <el-menu-item index="psw_reset" @click="currentView = 'psw_reset'">修改密码</el-menu-item>
@@ -12,19 +12,24 @@
 
         <!-- 右侧内容区域 -->
         <div class="main-content">
-
+            <InfoCard v-show="currentView === 'personal_info'" />
+            <PswReset v-show="currentView === 'psw_reset'" />
         </div>
     </div>
 </template>
 <script>
+    import InfoCard from './components/InfoCard.vue'
+    import PswReset from './components/PswReset.vue'
+
     export default{
         name:'infoView',
         components:{
-
+            InfoCard,
+            PswReset
         },
         data(){
             return{
-                defaultView:'personal_info',
+                currentView:'personal_info',
             }
         },
     }
@@ -43,7 +48,7 @@
     color: #ffffff;
     border-right: 1px solid #333;
     align-items: center;
-    justify-items: center;
+    justify-content: center;
 }
 
 .main-content {

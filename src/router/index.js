@@ -26,7 +26,7 @@ const routes = [
     meta: { title: '首页' }
   },
   {
-    path: '/perinfo',
+    path: '/info',
     name: 'InfoView',
     component: InfoView,
     meta: { title: '个人信息' }
