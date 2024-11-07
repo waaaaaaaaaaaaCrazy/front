@@ -2,7 +2,7 @@
     <div>
         <!-- 搜索栏 -->
         <div style="display: flex; margin-top: 20px; margin-bottom: 20px; margin-left: 10px">
-            <el-input v-model="searchTitle" placeholder="请输入通知标题搜索" clearable></el-input>
+            <el-input v-model="searchTitle" placeholder="请输入草稿标题搜索" clearable></el-input>
             <el-button type="success" style="margin-left: 10px; margin-right: 10px" @click="searchDraft" circle>
                 <el-icon>
                     <Search />

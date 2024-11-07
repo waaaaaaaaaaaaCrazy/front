@@ -96,10 +96,10 @@ export default {
                             status: status
                         },
                     })
-                        .then(() => {
-                            if (status === 'submit') {
+                        .then((response) => {
+                            if (status === 'submit' && response.status === 200) {
                                 this.$message.success('通知提交成功')
-                            } else if (status === 'draft') {
+                            } else if (status === 'draft' && response.status === 200) {
                                 this.$message.success('草稿保存成功')
                             }
                             this.hasInfo = false

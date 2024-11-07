@@ -1,14 +1,16 @@
 <template>
     <div>
-        <div class="span-title">
-            <span class="span-decoration">|</span>
-            {{ notice.title }}
-        </div>
-        <p style="margin: 20px 50px 10px 15px"><strong>发布日期:</strong> {{ notice.time }}</p>
-        <p style="margin: 0 50px 10px 15px"><strong>通知正文:</strong> {{ notice.content }}</p>
-        <p v-show="showAttachment" style="margin: 0 50px 0 15px"><strong>附件:</strong>
-            <a :herf=notice.attachment>{{ notice.attachment }}</a>
-        </p>
+        <el-card style="height:100vh">
+            <div class="span-title">
+                <span class="span-decoration">|</span>
+                {{ notice.title }}
+            </div>
+            <p style="margin: 20px 50px 10px 15px"><strong>发布日期:</strong> {{ notice.time }}</p>
+            <p style="margin: 0 50px 10px 15px"><strong>通知正文:</strong> {{ notice.content }}</p>
+            <p v-show="showAttachment" style="margin: 0 50px 0 15px"><strong>附件:</strong>
+                <a :herf=notice.attachment>{{ notice.attachment }}</a>
+            </p>
+        </el-card>
     </div>
 </template>
 
@@ -60,6 +62,6 @@ export default {
 .span-title {
     font-weight: bold;
     font-size: 30px;
-    margin: 10px 10px;
+    margin: 20px 10px;
 }
 </style>

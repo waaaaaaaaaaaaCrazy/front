@@ -5,7 +5,7 @@
       active-text-color="#409EFF">
       <!-- 左侧Logo -->
       <div class="header-left" style="margin-right: 10%;">
-        <img src="@/assets/logo.png" alt="智慧课程平台Logo" />
+        <el-image style="width: 50px; height: 50px" :src="logoImg" />
       </div>
       <!-- 菜单项 -->
       <el-menu-item index="1" @click="currentWeb = '课程列表'">课程列表</el-menu-item>
@@ -31,7 +31,7 @@
             <div class="profile-info">
               <!-- 头像上传 -->
               <div class="avatar-upload">
-                <img :src="userAvatar" alt="Avatar" style="margin-left: calc(50% - 25px)"
+                <el-avatar fit="fill" :size="50" :src="userAvatar" style="margin-left: calc(50% - 25px)"
                   @click="avatarDialogVisible = !avatarDialogVisible" />
                 <el-dialog v-model="avatarDialogVisible" title="OvO" width="500">
                   <span>是否选择上传新头像？</span>
@@ -53,14 +53,14 @@
               <div>
                 <router-link to="/favorite">
                   <el-icon style="margin-left: 33%" @click="handleFavorite">
-                    <el-tooltip class="box-item" effect="light" content="收藏" placement="top-end">
+                    <el-tooltip class="box-item" effect="dark" content="收藏" placement="top-end">
                       <Star />
                     </el-tooltip>
                   </el-icon>
                 </router-link>
                 <router-link to="/notebook">
                   <el-icon style="margin-left: 20%" @click="handleNotebook">
-                    <el-tooltip class="box-item" effect="light" content="笔记" placement="top-start">
+                    <el-tooltip class="box-item" effect="dark" content="笔记" placement="top-start">
                       <Notebook />
                     </el-tooltip>
                   </el-icon>
@@ -109,7 +109,7 @@
             <el-col v-for="(course, index) in courses" :key="index" :span="6" style="margin-bottom: 10px;">
               <el-card shadow="hover" @click="handleCourseClick(course)"
                 style="font-size: 12px; height: 100%; background-color: rgba(174, 205, 255, 0.6);">
-                <img :src="course.image" class="course-image" alt="课程图片" />
+                <el-image class="course-image" fit="fill" :src="course.image" lazy />
                 <div class="course-info">
                   <p><strong>{{ course.name }}</strong></p>
                   <p>课程号: {{ course.courseNumber }}</p>
@@ -129,7 +129,7 @@
               通知公告
             </div>
             <el-table max-height="30vh" :data="notice" :show-header="false" stripe="true" show-overflow-tooltip="true">
-              <el-table-column property="time" label="时间" width="120">
+              <el-table-column property="time" label="时间" width="120" fixed>
                 <template v-slot="scope">
                   <div @click="handleNoticeClick(scope.row)">
                     {{ scope.row.time }}
@@ -157,8 +157,8 @@
     </div>
     <div v-show="currentWeb === '课程表'">
       <el-card class="container2" :body-style="{ padding: '0px !important' }">
-        <el-table :data="classSchedule" style="width: 100%; height:100%; font-size: 15px" stripe>
-          <el-table-column label="时间段" width="140px">
+        <el-table :data="classSchedule" style="width: 100%; height:100%; font-size: 15px;" stripe>
+          <el-table-column label="时间段" width="140px" fixed>
             <template v-slot="scope">
               {{ scope.row.time }}
             </template>
@@ -176,6 +176,7 @@
 
 <script>
 import { Star, Notebook } from '@element-plus/icons-vue'
+import logoImg from '@/assets/logo.png';
 import defaultAvatarImg from '@/assets/avatar.jpg';
 import defaultCourseImg from '@/assets/course.jpg';
 
@@ -203,6 +204,7 @@ export default {
       messageDialogVisible: false,
 
       currentWeb: '课程列表',
+      logoImg: logoImg,
       userAvatar: defaultAvatarImg, // 用户头像URL
       unreadMessages: 0, // 用户名
       unreadNotifications: 0, // 未读通知数
@@ -223,11 +225,15 @@ export default {
 
       days: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
       classSchedule: [
-        { time: '08:00-09:50', '周一': '自习', '周二': '自习', '周三': '自习', '周四': '自习', '周五': '自习', '周六': '', '周日': '' },
-        { time: '10:10-12:00', '周一': '自习', '周二': '自习', '周三': '自习', '周四': '自习', '周五': '自习', '周六': '', '周日': '' },
-        { time: '14:10-16:00', '周一': '自习', '周二': '自习', '周三': '自习', '周四': '自习', '周五': '自习', '周六': '', '周日': '' },
-        { time: '16:20-18:10', '周一': '自习', '周二': '自习', '周三': '自习', '周四': '自习', '周五': '自习', '周六': '', '周日': '' },
-        { time: '19:00-20:50', '周一': '自习', '周二': '自习', '周三': '自习', '周四': '自习', '周五': '自习', '周六': '', '周日': '' },
+        { time: '08:00-08:50\n09:00-9:50', '周一': '自习', '周二': '自习', '周三': '自习', '周四': '自习', '周五': '自习', '周六': '', '周日': '' },
+        { time: '10:10-11:00\n11:10-12:00', '周一': '自习', '周二': '自习', '周三': '自习', '周四': '自习', '周五': '自习', '周六': '', '周日': '' },
+        { time: '', '周一': '', '周二': '', '周三': '', '周四': '', '周五': '', '周六': '', '周日': '' },
+        { time: '', '周一': '', '周二': '', '周三': '', '周四': '', '周五': '', '周六': '', '周日': '' },
+        { time: '14:10-15:00\n15:10-16:00', '周一': '自习', '周二': '自习', '周三': '自习', '周四': '自习', '周五': '自习', '周六': '', '周日': '' },
+        { time: '16:20-17:10\n17:20-18:10', '周一': '自习', '周二': '自习', '周三': '自习', '周四': '自习', '周五': '自习', '周六': '', '周日': '' },
+        { time: '', '周一': '', '周二': '', '周三': '', '周四': '', '周五': '', '周六': '', '周日': '' },
+        { time: '', '周一': '', '周二': '', '周三': '', '周四': '', '周五': '', '周六': '', '周日': '' },
+        { time: '19:00-19:50\n20:00-20:50', '周一': '自习', '周二': '自习', '周三': '自习', '周四': '自习', '周五': '自习', '周六': '', '周日': '' },
         { time: '21:10-21:50', '周一': '自习', '周二': '自习', '周三': '自习', '周四': '自习', '周五': '自习', '周六': '', '周日': '' },
       ]
     }
@@ -340,7 +346,7 @@ export default {
     },
     handleAvatarClick() {
       console.log('个人信息被点击')
-      this.$router.push('/perinfo');
+      this.$router.push('/info');
     },
     logout() {
       console.log('退出被点击')
