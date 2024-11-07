@@ -94,8 +94,11 @@ export default {
             this.axios.get('https://apifoxmock.com/m1/5315127-4985126-default/api/get_profile_info', { params: { email: this.email } })
                 .then(async (response) => {
                     this.name = response.data.name
+                    this.sex = response.data.sex
                     this.identity = response.data.identity
+                    this.id = response.data.id
                     this.college = response.data.college
+                    this.clas = response.data.class
                     this.email = response.data.email
                     this.phone = response.data.phone
                     if (response.data.avatarUrl) {
