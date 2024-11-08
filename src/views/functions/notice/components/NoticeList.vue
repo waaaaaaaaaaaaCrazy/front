@@ -98,9 +98,9 @@ export default {
             }
         },
         fetchNoticeList() {
-            console.log(sessionStorage.getItem('userInfo'))
+            console.log(sessionStorage.getItem('userID'))
             this.axios.get('https://apifoxmock.com/m1/5315127-4985126-default/api/get_notice_list', {
-                params: { user: sessionStorage.getItem('userInfo') }
+                params: { userID: sessionStorage.getItem('userID') }
             })
                 .then(response => {
                     // 将布尔值转换为字符串

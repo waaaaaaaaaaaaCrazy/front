@@ -14,13 +14,14 @@
             highlight-current-row>
             <el-table-column fixed type="index" width="50px" />
             <el-table-column prop="time" label="日期" sortable width="300px" column-key="time">
-                <template v-slot="click">
-                    <div @click="handleDraftClick(click.row)">
-                        {{ click.row.time }}
-                    </div>
-                </template>
             </el-table-column>
             <el-table-column prop="title" label="标题">
+            </el-table-column>
+            <el-table-column label="操作" width="250px">
+                <template v-slot="scope">
+                    <el-button type="warning" size="small" @click="handleModify(scope.row)" text>修改</el-button>
+                    <el-button type="warning" size="small" @click="handleDelete(scope.row)" text>删除</el-button>
+                </template>
             </el-table-column>
         </el-table>
     </div>
@@ -34,6 +35,8 @@ export default {
     },
     data() {
         return {
+            userID:sessionStorage.getItem('userID'),
+
             searchTitle: '',
             filteredTableData: [],
             tableRef: null,
@@ -54,9 +57,9 @@ export default {
             }
         },
         fetchDraftList() {
-            console.log(sessionStorage.getItem('userInfo'))
+            console.log(sessionStorage.getItem('userID'))
             this.axios.get('https://apifoxmock.com/m1/5315127-4985126-default/api/get_notice_list', {
-                params: { user: sessionStorage.getItem('userInfo') }
+                params: { userID: sessionStorage.getItem('userID') }
             })
                 .then(response => {
                     // 将布尔值转换为字符串
@@ -72,10 +75,36 @@ export default {
                     console.error('Error fetching notice list:', error)
                 })
         },
-        handleDraftClick(row) {
-            console.log('通知被点击:', row.id, row.time, row.title)
+        handleModify(row) {
+            console.log('草稿修改被点击:', row.id, row.time, row.title)
             this.$emit('goToNoticeAnnouce', row.id) // 触发父组件的 goToNoticeAnnouce 方法
-        }
+        },
+        handleDelete(row) {
+            // 处理删除操作
+            console.log('草稿删除被点击:', row.id, row.time, row.title)
+            this.axios.delete(`/api/notice/delete/${row.id}`, { cnID: row.id })
+                .then(response => {
+                    if (response.status === 200) {
+                        this.$message({
+                            message: '删除成功！',
+                            type: "success",
+                        })
+                    }
+                    else {
+                        this.$message({
+                            message: '删除失败！',
+                            type: "warning",
+                        })
+                    }
+                })
+                .catch(error => {
+                    console.error('删除请求出错:', error);
+                    this.$message({
+                        message: '删除请求出错！',
+                        type: "error",
+                    });
+                })
+        },
     },
     watch: {
         searchTitle: {

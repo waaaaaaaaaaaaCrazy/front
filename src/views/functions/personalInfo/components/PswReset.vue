@@ -79,6 +79,8 @@ export default {
                             "Content-Type": "application/json",
                         },
                         params: {
+                            userID: sessionStorage.getItem('userID'),
+                            identity: sessionStorage.getItem('identity'),
                             oldpsw: this.resetPasswordForm.oldpsw,
                             newpsw: this.resetPasswordForm.password,
                         }

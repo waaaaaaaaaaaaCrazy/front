@@ -43,6 +43,7 @@
 export default {
     data() {
         return {
+            userID:sessionStorage.getItem('userID'),
             noticeForm: {
                 title: '',
                 group: '',
@@ -89,6 +90,7 @@ export default {
                             "Content-Type": "application/json",
                         },
                         params: {                             // 请求参数
+                            userID:sessionStorage.getItem('userID'),
                             title: this.noticeForm.title,
                             group: this.noticeForm.group,
                             time: this.noticeForm.time,
@@ -131,7 +133,7 @@ export default {
         },
         fetchGroups() {
             this.axios.get('https://apifoxmock.com/m1/5315127-4985126-default/api/get_groups',
-                { params: { email: sessionStorage.getItem('userInfo') } })
+                { params: { userid: sessionStorage.getItem('userID') } })
                 .then(response => {
                     this.groups = response.data.group
                 })

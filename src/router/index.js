@@ -1,4 +1,6 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
+import { ElMessage } from 'element-plus';
+
 import Login from '@/views/login/Login.vue'
 import Home from '@/views/home/Home.vue'
 import InfoView from '@/views/functions/personalInfo/InfoView.vue'
@@ -29,7 +31,7 @@ const routes = [
     path: '/info',
     name: 'InfoView',
     component: InfoView,
-    meta: { title: '个人信息' }
+    meta: { title: '个人中心' }
   },
   {
     path: '/favorite',
@@ -70,8 +72,23 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  document.title = to.meta.title || '智慧课程平台';
-  next();
+  document.title = to.meta.title || '智慧课程平台'
+  // let isAuthenticated = !!sessionStorage.getItem('userInfo')
+
+  // // 如果路由要跳转到除了登录和注册的界面的话就判断是否已经登录，如果没有登录就强制跳到登录界面
+  // if (to.path !== '/login' && to.path !== '/register' && !isAuthenticated ) {
+  //     next({ path: '/login' })
+  //     // 这里 Message 提示需要根据你实际的情况调整
+  //     ElMessage({
+  //         message: '请先登录！',
+  //         type: 'warning',
+  //         grouping: true,
+  //     });
+  // } else {
+  //     //sessionStorage.clear();
+  //     next()
+  // }
+  next()
 })
 
 export default router

@@ -62,10 +62,12 @@ export default {
     },
     data() {
         return {
+            userID:sessionStorage.getItem('userID'),
+
             name: '',
-            identity: '',
+            identity: sessionStorage.getItem('identity'),
             college: '',
-            email: sessionStorage.getItem('userInfo'),
+            email: '',
             phone: '',
 
             avatarDialogVisible: false,
@@ -90,8 +92,8 @@ export default {
         },
 
         async fetchInfo() {
-            console.log(this.email)
-            this.axios.get('https://apifoxmock.com/m1/5315127-4985126-default/api/get_profile_info', { params: { email: this.email } })
+            console.log(this.userid)
+            this.axios.get('https://apifoxmock.com/m1/5315127-4985126-default/api/get_profile_info', { params: { userid: this.userid } })
                 .then(async (response) => {
                     this.name = response.data.name
                     this.sex = response.data.sex

@@ -157,7 +157,7 @@
     </div>
     <div v-show="currentWeb === '课程表'">
       <el-card class="container2" :body-style="{ padding: '0px !important' }">
-        <el-table :data="classSchedule" style="width: 100%; height:100%; font-size: 15px;" stripe>
+        <el-table :data="courseSchedule" style="width: 100%; height:100%; font-size: 15px;" stripe>
           <el-table-column label="时间段" width="140px" fixed>
             <template v-slot="scope">
               {{ scope.row.time }}
@@ -194,10 +194,12 @@ export default {
   },
   data() {
     return {
+      userID: sessionStorage.getItem('userID'),
+
       name: '',
-      identity: '',
+      identity: sessionStorage.getItem('identity'),
       college: '',
-      email: sessionStorage.getItem('userInfo'),
+      email: '',
       phone: '',
 
       avatarDialogVisible: false,
@@ -224,7 +226,7 @@ export default {
       ],
 
       days: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
-      classSchedule: [
+      courseSchedule: [
         { time: '08:00-08:50\n09:00-9:50', '周一': '自习', '周二': '自习', '周三': '自习', '周四': '自习', '周五': '自习', '周六': '', '周日': '' },
         { time: '10:10-11:00\n11:10-12:00', '周一': '自习', '周二': '自习', '周三': '自习', '周四': '自习', '周五': '自习', '周六': '', '周日': '' },
         { time: '', '周一': '', '周二': '', '周三': '', '周四': '', '周五': '', '周六': '', '周日': '' },
@@ -258,8 +260,8 @@ export default {
     },
 
     async fetchInfo() {
-      console.log(this.email)
-      this.axios.get('https://apifoxmock.com/m1/5315127-4985126-default/api/get_profile_info', { params: { email: this.email } })
+      console.log(this.userid)
+      this.axios.get('https://apifoxmock.com/m1/5315127-4985126-default/api/get_profile_info', { params: { userid: this.userid } })
         .then(async (response) => {
           this.name = response.data.name
           this.identity = response.data.identity
@@ -314,26 +316,26 @@ export default {
     },
 
     fetchUnreadNum() {
-      console.log(this.email)
+      console.log(this.userid)
       this.axios.get('https://apifoxmock.com/m1/5315127-4985126-default/api/get_unread_num',
-        { params: { email: this.email } })
+        { params: { userid: this.userid } })
         .then(response => {
           this.unreadNotifications = response.data.unreadaNoticeNum,
             this.unreadMessages = response.data.unreadaMessageNum
         })
     },
     fetchCourseMessage() {
-      console.log(this.email)
+      console.log(this.userid)
       this.axios.get('https://apifoxmock.com/m1/5315127-4985126-default/api/get_course_message',
-        { params: { email: this.email } })
+        { params: { userid: this.userid } })
         .then(response => {
           this.courseMessage = response.data.courseMsg
         })
     },
     fetchCourse() {
-      console.log(this.email)
+      console.log(this.userid)
       this.axios.get('https://apifoxmock.com/m1/5315127-4985126-default/api/get_course_list',
-        { params: { email: this.email } })
+        { params: { userid: this.userid } })
         .then(response => {
           this.courses = response.data.course
         })
