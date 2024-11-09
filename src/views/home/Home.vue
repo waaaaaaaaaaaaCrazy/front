@@ -39,7 +39,7 @@
                     <div class="button-group">
                       <el-button @click="avatarDialogVisible = false">取消</el-button>
                       <el-upload class="avatar-uploader"
-                        action="https://apifoxmock.com/m1/4767131-4420546-default/api/avatar_upload"
+                        action="https://apifoxmock.com/m1/5315127-4985126-default/api/upload_avatar"
                         accept=".jpg, .jpeg, .png" :show-file-list="false" :on-success="handleAvatarUploadSuccess"
                         :on-error="handleAvatarUploadError" :before-upload="beforeAvatarUpload">
                         <el-button type="primary" @click="avatarDialogVisible = false">
@@ -246,6 +246,7 @@ export default {
     this.fetchCourseMessage()
     this.fetchCourse()
     this.fetchNotice()
+    this.fetchCourseSchedule()
   },
   methods: {
     async convertUrlToBase64(url) {
@@ -260,8 +261,9 @@ export default {
     },
 
     async fetchInfo() {
-      console.log(this.userid)
-      this.axios.get('https://apifoxmock.com/m1/5315127-4985126-default/api/get_profile_info', { params: { userid: this.userid } })
+      console.log(this.userID)
+      this.axios.get('https://apifoxmock.com/m1/5315127-4985126-default/api/get_profile_info',
+      { params: { userID: this.userID } })
         .then(async (response) => {
           this.name = response.data.name
           this.identity = response.data.identity
@@ -316,26 +318,26 @@ export default {
     },
 
     fetchUnreadNum() {
-      console.log(this.userid)
+      console.log(this.userID)
       this.axios.get('https://apifoxmock.com/m1/5315127-4985126-default/api/get_unread_num',
-        { params: { userid: this.userid } })
+        { params: { userID: this.userID } })
         .then(response => {
           this.unreadNotifications = response.data.unreadaNoticeNum,
             this.unreadMessages = response.data.unreadaMessageNum
         })
     },
     fetchCourseMessage() {
-      console.log(this.userid)
+      console.log(this.userID)
       this.axios.get('https://apifoxmock.com/m1/5315127-4985126-default/api/get_course_message',
-        { params: { userid: this.userid } })
+        { params: { userID: this.userID } })
         .then(response => {
           this.courseMessage = response.data.courseMsg
         })
     },
     fetchCourse() {
-      console.log(this.userid)
+      console.log(this.userID)
       this.axios.get('https://apifoxmock.com/m1/5315127-4985126-default/api/get_course_list',
-        { params: { userid: this.userid } })
+        { params: { userID: this.userID } })
         .then(response => {
           this.courses = response.data.course
         })
@@ -382,7 +384,25 @@ export default {
           noticeTitle: row.title
         }
       })
-    }
+    },
+    fetchCourseSchedule(){
+      this.axios.get('https://apifoxmock.com/m1/5315127-4985126-default/api/get_course_schedule',
+      { params: { userID: this.userID } })
+      .then(response => {
+        this.courseSchedule = [
+        { time: '08:00-08:50\n09:00-9:50', '周一': response.data.M1, '周二': response.data.TU1, '周三': response.data.W1, '周四': response.data.TH1, '周五': response.data.F1, '周六': response.data.SA1, '周日': response.data.SU1 },
+        { time: '10:10-11:00\n11:10-12:00', '周一': response.data.M2, '周二': response.data.TU2, '周三': response.data.W2, '周四': response.data.TH2, '周五': response.data.F2, '周六': response.data.SA2, '周日': response.data.SU2 },
+        { time: '', '周一': '', '周二': '', '周三': '', '周四': '', '周五': '', '周六': '', '周日': '' },
+        { time: '', '周一': '', '周二': '', '周三': '', '周四': '', '周五': '', '周六': '', '周日': '' },
+        { time: '14:10-15:00\n15:10-16:00', '周一': response.data.M3, '周二': response.data.TU3, '周三': response.data.W3, '周四': response.data.TH3, '周五': response.data.F3, '周六': response.data.SA3, '周日': response.data.SU3 },
+        { time: '16:20-17:10\n17:20-18:10', '周一': response.data.M4, '周二': response.data.TU4, '周三': response.data.W4, '周四': response.data.TH4, '周五': response.data.F4, '周六': response.data.SA4, '周日': response.data.SU4 },
+        { time: '', '周一': '', '周二': '', '周三': '', '周四': '', '周五': '', '周六': '', '周日': '' },
+        { time: '', '周一': '', '周二': '', '周三': '', '周四': '', '周五': '', '周六': '', '周日': '' },
+        { time: '19:00-19:50\n20:00-20:50', '周一': response.data.M5, '周二': response.data.TU5, '周三': response.data.W5, '周四': response.data.TH5, '周五': response.data.F5, '周六': response.data.SA5, '周日': response.data.SU5 },
+        { time: '21:10-21:50', '周一': response.data.M6, '周二': response.data.TU6, '周三': response.data.W6, '周四': response.data.TH6, '周五': response.data.F6, '周六': response.data.SA6, '周日': response.data.SU6 },
+      ]
+      })
+    },
   },
 }
 

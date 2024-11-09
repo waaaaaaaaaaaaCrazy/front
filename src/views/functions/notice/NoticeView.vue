@@ -5,8 +5,8 @@
             active-text-color="#00fff7">
             <el-menu-item index="notice_detail" @click="currentView = 'notice_detail'">通知详情</el-menu-item>
             <el-menu-item index="notice_list" @click="currentView = 'notice_list'">通知列表</el-menu-item>
-            <el-menu-item index="notice_annouce" @click="currentView = 'notice_annouce'">通知发布</el-menu-item>
-            <el-menu-item index="notice_drafts" @click="currentView = 'notice_drafts'">草稿箱</el-menu-item>
+            <el-menu-item index="notice_annouce" v-if="identity === 1" @click="currentView = 'notice_annouce'">通知发布</el-menu-item>
+            <el-menu-item index="notice_drafts" v-if="identity === 1" @click="currentView = 'notice_drafts'">草稿箱</el-menu-item>
             <router-link to="/home">
                 <el-menu-item index="back" @click="clearInfo">返回主页</el-menu-item>
             </router-link>
@@ -46,6 +46,8 @@ export default {
             defaultView: '',
             currentView: 'notice_detail',
             info: null, // 用于存储传递给 NoticeAnnouce 的 id
+
+            identity:sessionStorage.getItem('identity')
         }
     },
     mounted() {

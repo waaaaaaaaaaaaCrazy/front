@@ -133,7 +133,7 @@ export default {
         },
         fetchGroups() {
             this.axios.get('https://apifoxmock.com/m1/5315127-4985126-default/api/get_groups',
-                { params: { userid: sessionStorage.getItem('userID') } })
+                { params: { userID: sessionStorage.getItem('userID') } })
                 .then(response => {
                     this.groups = response.data.group
                 })

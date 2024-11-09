@@ -10,7 +10,7 @@
                     <div class="button-group">
                         <el-button @click="avatarDialogVisible = false">取消</el-button>
                         <el-upload class="avatar-uploader"
-                            action="https://apifoxmock.com/m1/4767131-4420546-default/api/avatar_upload"
+                            action="https://apifoxmock.com/m1/5315127-4985126-default/api/upload_avatar"
                             accept=".jpg, .jpeg, .png" :show-file-list="false" :on-success="handleAvatarUploadSuccess"
                             :on-error="handleAvatarUploadError" :before-upload="beforeAvatarUpload">
                             <el-button type="primary" @click="avatarDialogVisible = false">
@@ -92,8 +92,8 @@ export default {
         },
 
         async fetchInfo() {
-            console.log(this.userid)
-            this.axios.get('https://apifoxmock.com/m1/5315127-4985126-default/api/get_profile_info', { params: { userid: this.userid } })
+            console.log(this.userID)
+            this.axios.get('https://apifoxmock.com/m1/5315127-4985126-default/api/get_profile_info', { params: { userID: this.userID } })
                 .then(async (response) => {
                     this.name = response.data.name
                     this.sex = response.data.sex
