@@ -47,7 +47,7 @@ export default {
             currentView: 'notice_detail',
             info: null, // 用于存储传递给 NoticeAnnouce 的 id
 
-            identity:sessionStorage.getItem('identity')
+            identity:1/*sessionStorage.getItem('identity')*/
         }
     },
     mounted() {

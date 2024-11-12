@@ -69,10 +69,8 @@
               <!-- 个人信息展示 -->
               <div class="profile-details" style="font-size:12px;margin-left: 15%">
                 <p><strong>姓名:</strong> {{ name }}</p>
+                <p><strong>工号:</strong> {{ userID }}</p>
                 <p><strong>身份:</strong> {{ identity }}</p>
-                <p><strong>学院:</strong> {{ college }}</p>
-                <p><strong>邮箱:</strong> {{ email }}</p>
-                <p><strong>电话:</strong> {{ phone }}</p>
               </div>
             </div>
           </el-card>
@@ -90,7 +88,7 @@
             <el-dialog v-model="messageDialogVisible" title="未读课程消息" width="500">
               <div>
                 <el-table :data="courseMessage">
-                  <el-table-column property="name" label="课程名" />
+                  <el-table-column property="cname" label="课程名" />
                   <el-table-column property="num" label="未读消息数" width="100" align="center" />
                 </el-table>
               </div>
@@ -111,9 +109,9 @@
                 style="font-size: 12px; height: 100%; background-color: rgba(174, 205, 255, 0.6);">
                 <el-image class="course-image" fit="fill" :src="course.image" lazy />
                 <div class="course-info">
-                  <p><strong>{{ course.name }}</strong></p>
-                  <p>课程号: {{ course.courseNumber }}</p>
-                  <p>课序号: {{ course.classNumber }}</p>
+                  <p><strong>{{ course.cname }}</strong></p>
+                  <p>课程号: {{ course.cid }}</p>
+                  <p>课序号: {{ course.cnumber }}</p>
                 </div>
               </el-card>
             </el-col>
@@ -150,7 +148,10 @@
           </el-card>
           <el-card class="card-date" shadow="always" style="width: 100%;height: 40vh;"
             :body-style="{ padding: '0px !important' }">
-            <el-calendar style="width: 100%;height:100;"></el-calendar>
+            <el-calendar style="width: 100%;height:100;" v-model="selectDate" @input="handleCalendarSelect" />
+            <el-dialog title="本日课程" :width="500" v-model="calendarDialogVisble">
+              <div v-html="calendarPopContent" />
+            </el-dialog>
           </el-card>
         </el-card>
       </div>
@@ -194,16 +195,17 @@ export default {
   },
   data() {
     return {
-      userID: sessionStorage.getItem('userID'),
-
+      userID: 1/*sessionStorage.getItem('userID')*/,
+      identity: 1/*sessionStorage.getItem('identity')*/,
       name: '',
-      identity: sessionStorage.getItem('identity'),
-      college: '',
-      email: '',
-      phone: '',
+      gender: '',
+      title: '',
+      grade: '',
+      sclass: '',
 
       avatarDialogVisible: false,
       messageDialogVisible: false,
+      calendarDialogVisble: false,
 
       currentWeb: '课程列表',
       logoImg: logoImg,
@@ -213,12 +215,12 @@ export default {
       courseImg: defaultCourseImg,// 课程图片URL
 
       courseMessage: [
-        { name: '专业课程综合实训III', num: 0 },
-        { name: '用户界面设计与评价', num: 0 }
+        { cname: '专业课程综合实训III', num: 0 },
+        { cname: '用户界面设计与评价', num: 0 }
       ],
       courses: [ // 课程列表数据
-        { image: defaultCourseImg, name: '专业课程综合实训III', courseNumber: 'P310002B', classNumber: '02' },
-        { image: defaultCourseImg, name: '用户界面设计与评价', courseNumber: 'M410023B', classNumber: '01' },
+        { image: defaultCourseImg, cname: '专业课程综合实训III', cid: 'P310002B', cnumber: '02' },
+        { image: defaultCourseImg, cname: '用户界面设计与评价', cid: 'M410023B', cnumber: '01' },
       ],
       notice: [
         { id: '1', time: '2023-10-01', title: '通知1' },
@@ -237,7 +239,10 @@ export default {
         { time: '', '周一': '', '周二': '', '周三': '', '周四': '', '周五': '', '周六': '', '周日': '' },
         { time: '19:00-19:50\n20:00-20:50', '周一': '自习', '周二': '自习', '周三': '自习', '周四': '自习', '周五': '自习', '周六': '', '周日': '' },
         { time: '21:10-21:50', '周一': '自习', '周二': '自习', '周三': '自习', '周四': '自习', '周五': '自习', '周六': '', '周日': '' },
-      ]
+      ],
+      selectDate: new Date(),
+      selectDay: '',
+      calendarPopContent: ''
     }
   },
   mounted() {
@@ -261,24 +266,42 @@ export default {
     },
 
     async fetchInfo() {
-      console.log(this.userID)
-      this.axios.get('https://apifoxmock.com/m1/5315127-4985126-default/api/get_profile_info',
-      { params: { userID: this.userID } })
-        .then(async (response) => {
-          this.name = response.data.name
-          this.identity = response.data.identity
-          this.college = response.data.college
-          this.email = response.data.email
-          this.phone = response.data.phone
-          if (response.data.avatarUrl) {
-            this.avatarUrl = response.data.avatarUrl // 如果后端返回了新的头像URL，则更新原始的URL  
-            // 调用convertUrlToBase64函数将URL转换为Base64  
-            // this.avatarBase64 = await this.convertUrlToBase64(this.avatarUrl);
-            // this.avatarUrl = this.avatarBase64;
-          }
-        }).catch((error) => {
-          console.error('Error fetching profile info:', error)
-        })
+      console.log(this.userID)/*'https://apifoxmock.com/m1/5315127-4985126-default/api/get_profile_info'  `/api/teacher/findByTID/${this.userID}`*/
+      if (this.identity === 1)
+        this.axios.get(`/api/teacher/findByTID/${this.userID}`,
+          { params: { tID: this.userID } })
+          .then(async (response) => {
+            this.name = response.data.tName
+            this.gender = response.data.tGender
+            this.title = response.data.tTitle
+            if (response.data.avatarUrl) {
+              this.avatarUrl = response.data.avatarUrl // 如果后端返回了新的头像URL，则更新原始的URL  
+              // 调用convertUrlToBase64函数将URL转换为Base64  
+              // this.avatarBase64 = await this.convertUrlToBase64(this.avatarUrl);
+              // this.avatarUrl = this.avatarBase64;
+            }
+            console.log('info:', response.data)
+          }).catch((error) => {
+            console.error('Error fetching profile info:', error)
+          })
+      else
+        this.axios.get(`/api/student/findBySID/${this.userID}`,
+          { params: { sID: this.userID } })
+          .then(async (response) => {
+            this.name = response.data.sName
+            this.gender = response.data.sGender
+            this.grade = response.data.sGrade
+            this.sclass = response.data.sClass
+            if (response.data.avatarUrl) {
+              this.avatarUrl = response.data.avatarUrl // 如果后端返回了新的头像URL，则更新原始的URL  
+              // 调用convertUrlToBase64函数将URL转换为Base64  
+              // this.avatarBase64 = await this.convertUrlToBase64(this.avatarUrl);
+              // this.avatarUrl = this.avatarBase64;
+            }
+            console.log('info:', response.data)
+          }).catch((error) => {
+            console.error('Error fetching profile info:', error)
+          })
     },
     handleAvatarUploadSuccess(response, file) {
       // 假设服务器返回的数据中包含新的头像URL  
@@ -334,13 +357,43 @@ export default {
           this.courseMessage = response.data.courseMsg
         })
     },
-    fetchCourse() {
+    fetchCourse() {//'https://apifoxmock.com/m1/5315127-4985126-default/api/get_course_list'
       console.log(this.userID)
-      this.axios.get('https://apifoxmock.com/m1/5315127-4985126-default/api/get_course_list',
-        { params: { userID: this.userID } })
-        .then(response => {
-          this.courses = response.data.course
-        })
+      if (this.identity === 1)
+        this.axios.get('/api/course/teacher',
+          { params: { tID: this.userID } })
+          .then(response => {
+            let coursesFromServer = response.data
+            // 遍历课程列表，设置默认图片
+            coursesFromServer.forEach(course => {
+              if (!course.image || course.image.trim() === '') {
+                // 如果 image 为空或仅包含空白字符，则使用默认图片
+                course.image = defaultCourseImg
+              }
+              // 你可以添加更多条件来检查 image 是否有效，例如验证 URL 格式
+            })
+
+            // 更新组件的状态或数据
+            this.courses = coursesFromServer
+          })
+      else
+        this.axios.get('/api/course/student',
+          { params: { sID: this.userID } })
+          .then(response => {
+            let coursesFromServer = response.data
+            // 遍历课程列表，设置默认图片
+            coursesFromServer.forEach(course => {
+              if (!course.image || course.image.trim() === '') {
+                // 如果 image 为空或仅包含空白字符，则使用默认图片
+                course.image = defaultCourseImg
+              }
+              // 你可以添加更多条件来检查 image 是否有效，例如验证 URL 格式
+            })
+
+            // 更新组件的状态或数据
+            this.courses = coursesFromServer
+          })
+      console.log('courses:', this.courses)
     },
     fetchNotice() {
       this.axios.get('https://apifoxmock.com/m1/5315127-4985126-default/api/get_notice_list')
@@ -367,10 +420,10 @@ export default {
       console.log('课程被点击:', course)
       this.$router.push({
         name: 'CourseDetail',
-        params: { courseId: course.name },
+        params: { courseId: course.cid },
         query: {
-          courseNumber: course.courseNumber,
-          classNumber: course.classNumber
+          cid: course.cid,
+          cnumber: course.cnumber
         }
       })
     },
@@ -385,23 +438,58 @@ export default {
         }
       })
     },
-    fetchCourseSchedule(){
-      this.axios.get('https://apifoxmock.com/m1/5315127-4985126-default/api/get_course_schedule',
-      { params: { userID: this.userID } })
-      .then(response => {
-        this.courseSchedule = [
-        { time: '08:00-08:50\n09:00-9:50', '周一': response.data.M1, '周二': response.data.TU1, '周三': response.data.W1, '周四': response.data.TH1, '周五': response.data.F1, '周六': response.data.SA1, '周日': response.data.SU1 },
-        { time: '10:10-11:00\n11:10-12:00', '周一': response.data.M2, '周二': response.data.TU2, '周三': response.data.W2, '周四': response.data.TH2, '周五': response.data.F2, '周六': response.data.SA2, '周日': response.data.SU2 },
-        { time: '', '周一': '', '周二': '', '周三': '', '周四': '', '周五': '', '周六': '', '周日': '' },
-        { time: '', '周一': '', '周二': '', '周三': '', '周四': '', '周五': '', '周六': '', '周日': '' },
-        { time: '14:10-15:00\n15:10-16:00', '周一': response.data.M3, '周二': response.data.TU3, '周三': response.data.W3, '周四': response.data.TH3, '周五': response.data.F3, '周六': response.data.SA3, '周日': response.data.SU3 },
-        { time: '16:20-17:10\n17:20-18:10', '周一': response.data.M4, '周二': response.data.TU4, '周三': response.data.W4, '周四': response.data.TH4, '周五': response.data.F4, '周六': response.data.SA4, '周日': response.data.SU4 },
-        { time: '', '周一': '', '周二': '', '周三': '', '周四': '', '周五': '', '周六': '', '周日': '' },
-        { time: '', '周一': '', '周二': '', '周三': '', '周四': '', '周五': '', '周六': '', '周日': '' },
-        { time: '19:00-19:50\n20:00-20:50', '周一': response.data.M5, '周二': response.data.TU5, '周三': response.data.W5, '周四': response.data.TH5, '周五': response.data.F5, '周六': response.data.SA5, '周日': response.data.SU5 },
-        { time: '21:10-21:50', '周一': response.data.M6, '周二': response.data.TU6, '周三': response.data.W6, '周四': response.data.TH6, '周五': response.data.F6, '周六': response.data.SA6, '周日': response.data.SU6 },
-      ]
-      })
+    handleCalendarSelect(date) {
+      console.log('Selected date:', date, 'Type:', typeof date)
+      if (!(date instanceof Date)) {
+        return
+      }
+      let year = date.getFullYear();  // 获取年份
+      let month = date.getMonth() + 1;  // 获取月份 (0-11, 需加1)
+      let day = date.getDate();  // 获取日期
+      this.selectDay = `${year}-${month}-${day}`;  // 格式化日期为 YYYY-MM-DD
+      console.log('Selectd day:', this.selectDay)
+      const dayOfWeek = this.getDayOfWeek(date)
+      console.log(dayOfWeek)
+      const courses = this.getCoursesForDay(dayOfWeek)
+      console.log(courses)
+      this.calendarPopContent = this.selectDay + '<br><br>' + this.formatCourses(courses)
+      console.log(this.calendarPopContent)
+      this.calendarDialogVisble = !this.calendarDialogVisble
+      console.log(this.calendarDialogVisble)
+    },
+    getDayOfWeek(date) {
+      const days = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+      return days[date.getDay()]
+    },
+    getCoursesForDay(dayOfWeek) {
+      return this.courseSchedule.map(course => ({
+        time: course.time,
+        course: course[dayOfWeek]
+      }))
+    },
+    formatCourses(courses) {
+      return courses
+        .filter(course => course.course)
+        .map(course => `${course.time}: ${course.course}`)
+        .join('<br>')
+    },
+    fetchCourseSchedule() {//`/api/schedule/findBySID/${this.userID}`  'https://apifoxmock.com/m1/5315127-4985126-default/api/get_course_schedule'
+      this.axios.get(`/api/schedule/findBySID/${this.userID}`,
+        { params: { sID: this.userID } })
+        .then(response => {
+          this.courseSchedule = [
+            { time: '08:00-08:50\n09:00-9:50', '周一': response.data.mon1, '周二': response.data.tues1, '周三': response.data.wed1, '周四': response.data.thur1, '周五': response.data.fri1, '周六': response.data.sat1, '周日': response.data.sun1 },
+            { time: '10:10-11:00\n11:10-12:00', '周一': response.data.mon2, '周二': response.data.tues2, '周三': response.data.wed2, '周四': response.data.thur2, '周五': response.data.fri2, '周六': response.data.sat2, '周日': response.data.sun2 },
+            { time: '', '周一': '', '周二': '', '周三': '', '周四': '', '周五': '', '周六': '', '周日': '' },
+            { time: '', '周一': '', '周二': '', '周三': '', '周四': '', '周五': '', '周六': '', '周日': '' },
+            { time: '14:10-15:00\n15:10-16:00', '周一': response.data.mon3, '周二': response.data.tues3, '周三': response.data.wed3, '周四': response.data.thur3, '周五': response.data.fri3, '周六': response.data.sat3, '周日': response.data.sun3 },
+            { time: '16:20-17:10\n17:20-18:10', '周一': response.data.mon4, '周二': response.data.tues4, '周三': response.data.wed4, '周四': response.data.thur4, '周五': response.data.fri4, '周六': response.data.sat4, '周日': response.data.sun4 },
+            { time: '', '周一': '', '周二': '', '周三': '', '周四': '', '周五': '', '周六': '', '周日': '' },
+            { time: '', '周一': '', '周二': '', '周三': '', '周四': '', '周五': '', '周六': '', '周日': '' },
+            { time: '19:00-19:50\n20:00-20:50', '周一': response.data.mon5, '周二': response.data.tues5, '周三': response.data.wed5, '周四': response.data.thur5, '周五': response.data.fri5, '周六': response.data.sat5, '周日': response.data.sun5 },
+            { time: '21:10-21:50', '周一': response.data.mon6, '周二': response.data.tues6, '周三': response.data.wed6, '周四': response.data.thur6, '周五': response.data.fri6, '周六': response.data.sat6, '周日': response.data.sun6 },
+          ]
+        })
     },
   },
 }

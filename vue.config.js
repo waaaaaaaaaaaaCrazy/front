@@ -4,6 +4,10 @@ module.exports = defineConfig({
   lintOnSave: false,
   // 开启代理服务器
   devServer: {
+    //取消浏览器抛出全屏异常
+    client: {
+      overlay: false,
+    },
     // 代理服务器可以将路由中的指定前缀转发到指定的后端服务器中
     proxy: {
       '/api': {

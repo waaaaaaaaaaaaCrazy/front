@@ -23,7 +23,8 @@
                         :autosize="{ minRows: 8, maxRows: 12 }"></el-input>
                 </el-form-item>
                 <el-form-item label="通知附件：">
-                    <el-upload ref="upload" action="https://apifoxmock.com/m1/5315127-4985126-default/api/upload_attachment"
+                    <!-- https://apifoxmock.com/m1/5315127-4985126-default/api/upload_attachment -->
+                    <el-upload ref="upload" action="/api/attachment/upload"
                         list-type="text" :on-success="handleUploadSuccess" :on-error="handleUploadError">
                         <el-button type="primary">上传附件</el-button>
                         <div class="el-upload__tip" style="margin-left: 5px;">上传通知附件，单个文件最大2MB</div>

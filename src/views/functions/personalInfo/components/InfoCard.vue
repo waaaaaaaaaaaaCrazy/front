@@ -3,7 +3,7 @@
         <!-- 头像上传 -->
         <div class="avatar-upload">
             <el-avatar fit="fill" :size="100" :src="userAvatar" style="margin-left: calc(50% - 50px)"
-            @click="avatarDialogVisible = !avatarDialogVisible" />
+                @click="avatarDialogVisible = !avatarDialogVisible" />
             <el-dialog v-model="avatarDialogVisible" title="OvO" width="500">
                 <span>是否选择上传新头像？</span>
                 <template #footer>
@@ -40,13 +40,12 @@
         <!-- 个人信息展示 -->
         <div class="profile-details" style="font-size:20px;margin-left: 15%">
             <p><strong>姓名:</strong> {{ name }}</p>
-            <p><strong>性别:</strong> {{ sex }}</p>
+            <p><strong>姓别:</strong> {{ gender }}</p>
+            <p><strong>工号:</strong> {{ userID }}</p>
             <p><strong>身份:</strong> {{ identity }}</p>
-            <p><strong>学号:</strong> {{ id }}</p>
-            <p><strong>学院:</strong> {{ college }}</p>
-            <p><strong>班级:</strong> {{ clas }}</p>
-            <p><strong>邮箱:</strong> {{ email }}</p>
-            <p><strong>电话:</strong> {{ phone }}</p>
+            <p v-if="identity === 1"><strong>职位:</strong> {{ title }}</p>
+            <p v-if="identity === 0"><strong>年级:</strong> {{ grade }}</p>
+            <p v-if="identity === 0"><strong>班级:</strong> {{ sclass }}</p>
         </div>
     </div>
 </template>
@@ -62,13 +61,13 @@ export default {
     },
     data() {
         return {
-            userID:sessionStorage.getItem('userID'),
-
+            userID: 1/*sessionStorage.getItem('userID')*/,
             name: '',
-            identity: sessionStorage.getItem('identity'),
-            college: '',
-            email: '',
-            phone: '',
+            identity: 1/*sessionStorage.getItem('identity')*/,
+            gender: '',
+            title: '',
+            grade: '',
+            sclass: '',
 
             avatarDialogVisible: false,
 
@@ -93,25 +92,41 @@ export default {
 
         async fetchInfo() {
             console.log(this.userID)
-            this.axios.get('https://apifoxmock.com/m1/5315127-4985126-default/api/get_profile_info', { params: { userID: this.userID } })
-                .then(async (response) => {
-                    this.name = response.data.name
-                    this.sex = response.data.sex
-                    this.identity = response.data.identity
-                    this.id = response.data.id
-                    this.college = response.data.college
-                    this.clas = response.data.class
-                    this.email = response.data.email
-                    this.phone = response.data.phone
-                    if (response.data.avatarUrl) {
-                        this.avatarUrl = response.data.avatarUrl // 如果后端返回了新的头像URL，则更新原始的URL  
-                        // 调用convertUrlToBase64函数将URL转换为Base64  
-                        // this.avatarBase64 = await this.convertUrlToBase64(this.avatarUrl);
-                        // this.avatarUrl = this.avatarBase64;
-                    }
-                }).catch((error) => {
-                    console.error('Error fetching profile info:', error)
-                })
+            if (this.identity === 1)
+        this.axios.get(`/api/teacher/findByTID/${this.userID}`,
+          { params: { tID: this.userID } })
+          .then(async (response) => {
+            this.name = response.data.tName
+            this.gender = response.data.tGender
+            this.title = response.data.tTitle
+            if (response.data.avatarUrl) {
+              this.avatarUrl = response.data.avatarUrl // 如果后端返回了新的头像URL，则更新原始的URL  
+              // 调用convertUrlToBase64函数将URL转换为Base64  
+              // this.avatarBase64 = await this.convertUrlToBase64(this.avatarUrl);
+              // this.avatarUrl = this.avatarBase64;
+            }
+            console.log('info:',response.data)
+          }).catch((error) => {
+            console.error('Error fetching profile info:', error)
+          })
+      else
+        this.axios.get(`/api/student/findBySID/${this.userID}`,
+          { params: { sID: this.userID } })
+          .then(async (response) => {
+            this.name = response.data.sName
+            this.gender = response.data.sGender
+            this.grade = response.data.sGrade
+            this.sclass = response.data.sClass
+            if (response.data.avatarUrl) {
+              this.avatarUrl = response.data.avatarUrl // 如果后端返回了新的头像URL，则更新原始的URL  
+              // 调用convertUrlToBase64函数将URL转换为Base64  
+              // this.avatarBase64 = await this.convertUrlToBase64(this.avatarUrl);
+              // this.avatarUrl = this.avatarBase64;
+            }
+            console.log('info:',response.data)
+          }).catch((error) => {
+            console.error('Error fetching profile info:', error)
+          })
         },
         handleAvatarUploadSuccess(response, file) {
             // 假设服务器返回的数据中包含新的头像URL  
@@ -161,15 +176,15 @@ export default {
 
 <style scoped>
 .avatar-upload img {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
 }
 
 .button-group {
-  display: flex;
-  justify-content: flex-end;
-  /* 按钮靠右对齐 */
-  gap: 10px;
+    display: flex;
+    justify-content: flex-end;
+    /* 按钮靠右对齐 */
+    gap: 10px;
 }
 </style>

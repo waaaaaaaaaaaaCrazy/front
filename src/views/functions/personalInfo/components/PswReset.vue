@@ -15,8 +15,7 @@
             </el-form>
             <div class="btnGroup" style="margin-top: 50px">
                 <el-button type="primary" style="margin-left: 12vw;" @click="submitForm()">提交</el-button>
-                <el-button type="success" style="margin-left: 50vw;"
-                    @click="resetForm()">清空</el-button>
+                <el-button type="success" style="margin-left: 50vw;" @click="resetForm()">清空</el-button>
             </div>
         </el-card>
     </div>
@@ -30,31 +29,37 @@ export default {
                 callback(new Error("请输入旧密码！"))
             }
             else {
+                if (this.resetPasswordForm.newpsw !== "")
+                    this.$refs.resetPasswordForm.validateField("newpsw")
                 callback()
             }
-        };
+        }
         var validatePass1 = (rule, value, callback) => {
             if (value === "") {
                 callback(new Error("请输入新密码！"))
             }
+            else if (value === this.resetPasswordForm.oldpsw) {
+                callback(new Error("新密码不能与旧密码相同！"))
+            }
             else {
-                if (this.resetPasswordForm.password !== "") {
-                    this.$refs.resetPasswordForm.validateField("password");
-                }
+                if (this.resetPasswordForm.password !== "")
+                    this.$refs.resetPasswordForm.validateField("password")
                 callback()
             }
-        };
+        }
         var validatePass2 = (rule, value, callback) => {
             if (value === "") {
                 callback(new Error("请再次输入新密码！"))
-            } else if (value !== this.resetPasswordForm.newpsw) {
-                callback(new Error("两次输入密码不一致!"))
-            } else {
-                callback()
             }
-        };
+            else if (this.resetPasswordForm.newpsw !== '' && value !== this.resetPasswordForm.newpsw) {
+                callback(new Error("两次输入密码不一致!"))
+            }
+            else
+                callback()
+        }
         return {
-            step: 1,
+            userID: 1/*sessionStorage.getItem('userID')*/,
+            identity: 0/*sessionStorage.getItem('identity')*/,
             resetPasswordForm: {
                 oldpsw: "",
                 newpsw: "",
@@ -72,23 +77,23 @@ export default {
             console.log('提交表单')
             this.$refs.resetPasswordForm.validate((valid) => {
                 if (valid) {
-                    this.axios({
-                        url: "https://apifoxmock.com/m1/5315127-4985126-default/api/reset_password",
+                    this.axios({//"https://apifoxmock.com/m1/5315127-4985126-default/api/reset_password"
+                        url: "/api/user/change",
                         method: "post",
                         headers: {
                             "Content-Type": "application/json",
                         },
                         params: {
-                            userID: sessionStorage.getItem('userID'),
-                            identity: sessionStorage.getItem('identity'),
-                            oldpsw: this.resetPasswordForm.oldpsw,
-                            newpsw: this.resetPasswordForm.password,
+                            IDnumber: this.userID,
+                            identity: this.identity,
+                            oldPassword: this.resetPasswordForm.oldpsw,
+                            newPassword: this.resetPasswordForm.password,
                         }
                     }).then((res) => {
                         if (res.status === 200) {
                             this.$message({
-                                message: "密码修改成功！",
-                                type: "success",
+                                message: res.data.message,
+                                type: res.data.success ? 'success' : 'warning',
                             });
                         } else {
                             this.$message({
@@ -102,7 +107,9 @@ export default {
                     console.log("表单填写有误！")
                     return false
                 }
-            });
+            }).catch((error) => {
+                console.error('Error:', error)
+            })
         },
         resetForm() {
             this.$refs.resetPasswordForm.resetFields()
