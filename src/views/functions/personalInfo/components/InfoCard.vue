@@ -43,9 +43,9 @@
             <p><strong>姓别:</strong> {{ gender }}</p>
             <p><strong>工号:</strong> {{ userID }}</p>
             <p><strong>身份:</strong> {{ identity }}</p>
-            <p v-if="identity === 1"><strong>职位:</strong> {{ title }}</p>
-            <p v-if="identity === 0"><strong>年级:</strong> {{ grade }}</p>
-            <p v-if="identity === 0"><strong>班级:</strong> {{ sclass }}</p>
+            <p v-if="isTeacher === 1"><strong>职位:</strong> {{ title }}</p>
+            <p v-if="isTeacher === 0"><strong>年级:</strong> {{ grade }}</p>
+            <p v-if="isTeacher === 0"><strong>班级:</strong> {{ sclass }}</p>
         </div>
     </div>
 </template>
@@ -62,8 +62,9 @@ export default {
     data() {
         return {
             userID: 1/*sessionStorage.getItem('userID')*/,
+            isTeacher: 1/*sessionStorage.getItem('isTeacher')*/,
             name: '',
-            identity: 1/*sessionStorage.getItem('identity')*/,
+            identity: '',
             gender: '',
             title: '',
             grade: '',
@@ -92,41 +93,43 @@ export default {
 
         async fetchInfo() {
             console.log(this.userID)
-            if (this.identity === 1)
-        this.axios.get(`/api/teacher/findByTID/${this.userID}`,
-          { params: { tID: this.userID } })
-          .then(async (response) => {
-            this.name = response.data.tName
-            this.gender = response.data.tGender
-            this.title = response.data.tTitle
-            if (response.data.avatarUrl) {
-              this.avatarUrl = response.data.avatarUrl // 如果后端返回了新的头像URL，则更新原始的URL  
-              // 调用convertUrlToBase64函数将URL转换为Base64  
-              // this.avatarBase64 = await this.convertUrlToBase64(this.avatarUrl);
-              // this.avatarUrl = this.avatarBase64;
-            }
-            console.log('info:',response.data)
-          }).catch((error) => {
-            console.error('Error fetching profile info:', error)
-          })
-      else
-        this.axios.get(`/api/student/findBySID/${this.userID}`,
-          { params: { sID: this.userID } })
-          .then(async (response) => {
-            this.name = response.data.sName
-            this.gender = response.data.sGender
-            this.grade = response.data.sGrade
-            this.sclass = response.data.sClass
-            if (response.data.avatarUrl) {
-              this.avatarUrl = response.data.avatarUrl // 如果后端返回了新的头像URL，则更新原始的URL  
-              // 调用convertUrlToBase64函数将URL转换为Base64  
-              // this.avatarBase64 = await this.convertUrlToBase64(this.avatarUrl);
-              // this.avatarUrl = this.avatarBase64;
-            }
-            console.log('info:',response.data)
-          }).catch((error) => {
-            console.error('Error fetching profile info:', error)
-          })
+            if (this.isTeacher === 1)
+                this.axios.get(`/api/teacher/findByTID/${this.userID}`,
+                    { params: { tID: this.userID } })
+                    .then(async (response) => {
+                        this.name = response.data.tName
+                        this.identity = '教师'
+                        this.gender = response.data.tGender ? '男' : '女'
+                        this.title = response.data.tTitle
+                        if (response.data.avatarUrl) {
+                            this.avatarUrl = response.data.avatarUrl // 如果后端返回了新的头像URL，则更新原始的URL  
+                            // 调用convertUrlToBase64函数将URL转换为Base64  
+                            // this.avatarBase64 = await this.convertUrlToBase64(this.avatarUrl);
+                            // this.avatarUrl = this.avatarBase64;
+                        }
+                        console.log('info:', response.data)
+                    }).catch((error) => {
+                        console.error('Error fetching profile info:', error)
+                    })
+            else
+                this.axios.get(`/api/student/findBySID/${this.userID}`,
+                    { params: { sID: this.userID } })
+                    .then(async (response) => {
+                        this.name = response.data.sName
+                        this.identity = '学生'
+                        this.gender = response.data.sGender ? '男' : '女'
+                        this.grade = response.data.sGrade
+                        this.sclass = response.data.sClass
+                        if (response.data.avatarUrl) {
+                            this.avatarUrl = response.data.avatarUrl // 如果后端返回了新的头像URL，则更新原始的URL  
+                            // 调用convertUrlToBase64函数将URL转换为Base64  
+                            // this.avatarBase64 = await this.convertUrlToBase64(this.avatarUrl);
+                            // this.avatarUrl = this.avatarBase64;
+                        }
+                        console.log('info:', response.data)
+                    }).catch((error) => {
+                        console.error('Error fetching profile info:', error)
+                    })
         },
         handleAvatarUploadSuccess(response, file) {
             // 假设服务器返回的数据中包含新的头像URL  

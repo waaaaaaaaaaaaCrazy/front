@@ -67,7 +67,7 @@
                 </router-link>
               </div>
               <!-- 个人信息展示 -->
-              <div class="profile-details" style="font-size:12px;margin-left: 15%">
+              <div class="profile-details" style="font-size:15px;margin-left: 15%">
                 <p><strong>姓名:</strong> {{ name }}</p>
                 <p><strong>工号:</strong> {{ userID }}</p>
                 <p><strong>身份:</strong> {{ identity }}</p>
@@ -81,8 +81,8 @@
               <span class="span-decoration">|</span>
               消息总览
             </div>
-            <div style="font-size: 14px;margin-top: 20px;">
-              <p><strong>未读通知:</strong> {{ unreadNotifications }}</p>
+            <div style="font-size: 14px;margin: 25px;">
+              <!-- <p><strong>未读通知:</strong> {{ unreadNotifications }}</p> -->
               <p @click="messageDialogVisible = !messageDialogVisible"><strong>未读课程消息:</strong> {{ unreadMessages }}</p>
             </div>
             <el-dialog v-model="messageDialogVisible" title="未读课程消息" width="500">
@@ -106,12 +106,12 @@
           <el-row :gutter="20" style="margin-top: 10px;">
             <el-col v-for="(course, index) in courses" :key="index" :span="6" style="margin-bottom: 10px;">
               <el-card shadow="hover" @click="handleCourseClick(course)"
-                style="font-size: 12px; height: 100%; background-color: rgba(174, 205, 255, 0.6);">
+                style="height: 100%; background-color: rgba(174, 205, 255, 0.6);">
                 <el-image class="course-image" fit="fill" :src="course.image" lazy />
                 <div class="course-info">
-                  <p><strong>{{ course.cname }}</strong></p>
-                  <p>课程号: {{ course.cid }}</p>
-                  <p>课序号: {{ course.cnumber }}</p>
+                  <p style="font-size: 15px"><strong>{{ course.cname }}</strong></p>
+                  <p style="font-size: 12px">课程号: {{ course.cid }}</p>
+                  <p style="font-size: 12px">课序号: {{ course.cnumber }}</p>
                 </div>
               </el-card>
             </el-col>
@@ -127,17 +127,17 @@
               通知公告
             </div>
             <el-table max-height="30vh" :data="notice" :show-header="false" stripe="true" show-overflow-tooltip="true">
-              <el-table-column property="time" label="时间" width="120" fixed>
+              <el-table-column property="cnTime" label="时间" width="95px" fixed>
                 <template v-slot="scope">
                   <div @click="handleNoticeClick(scope.row)">
-                    {{ scope.row.time }}
+                    {{ scope.row.cnTime }}
                   </div>
                 </template>
               </el-table-column>
-              <el-table-column property="title" label="标题">
+              <el-table-column property="cnTitle" label="标题">
                 <template v-slot="scope">
                   <div @click="handleNoticeClick(scope.row)">
-                    {{ scope.row.title }}
+                    {{ scope.row.cnTitle }}
                   </div>
                 </template>
               </el-table-column>
@@ -159,12 +159,12 @@
     <div v-show="currentWeb === '课程表'">
       <el-card class="container2" :body-style="{ padding: '0px !important' }">
         <el-table :data="courseSchedule" style="width: 100%; height:100%; font-size: 15px;" stripe>
-          <el-table-column label="时间段" width="140px" fixed>
+          <el-table-column label="时间段" width="120px" fixed>
             <template v-slot="scope">
               {{ scope.row.time }}
             </template>
           </el-table-column>
-          <el-table-column v-for="(day, index) in days" :key="index" :label="day" width="130px">
+          <el-table-column v-for="(day, index) in days" :key="index" :label="day" width="135px">
             <template v-slot="scope">
               {{ scope.row[day] || '' }}
             </template>
@@ -196,8 +196,9 @@ export default {
   data() {
     return {
       userID: 1/*sessionStorage.getItem('userID')*/,
-      identity: 1/*sessionStorage.getItem('identity')*/,
+      isTeacher: 1/*sessionStorage.getItem('isTeacher')*/,
       name: '',
+      identity: '',
       gender: '',
       title: '',
       grade: '',
@@ -223,13 +224,13 @@ export default {
         { image: defaultCourseImg, cname: '用户界面设计与评价', cid: 'M410023B', cnumber: '01' },
       ],
       notice: [
-        { id: '1', time: '2023-10-01', title: '通知1' },
-        { id: '2', time: '2023-10-02', title: '通知2' }
+        { cnID: '1', cnTime: '2023-10-01', cnTitle: '通知1' },
+        { cnID: '2', cnTime: '2023-10-02', cnTitle: '通知2' }
       ],
 
       days: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
       courseSchedule: [
-        { time: '08:00-08:50\n09:00-9:50', '周一': '自习', '周二': '自习', '周三': '自习', '周四': '自习', '周五': '自习', '周六': '', '周日': '' },
+        { time: '08:00-08:50\n09:00-09:50', '周一': '自习', '周二': '自习', '周三': '自习', '周四': '自习', '周五': '自习', '周六': '', '周日': '' },
         { time: '10:10-11:00\n11:10-12:00', '周一': '自习', '周二': '自习', '周三': '自习', '周四': '自习', '周五': '自习', '周六': '', '周日': '' },
         { time: '', '周一': '', '周二': '', '周三': '', '周四': '', '周五': '', '周六': '', '周日': '' },
         { time: '', '周一': '', '周二': '', '周三': '', '周四': '', '周五': '', '周六': '', '周日': '' },
@@ -267,12 +268,13 @@ export default {
 
     async fetchInfo() {
       console.log(this.userID)/*'https://apifoxmock.com/m1/5315127-4985126-default/api/get_profile_info'  `/api/teacher/findByTID/${this.userID}`*/
-      if (this.identity === 1)
+      if (this.isTeacher === 1)
         this.axios.get(`/api/teacher/findByTID/${this.userID}`,
           { params: { tID: this.userID } })
           .then(async (response) => {
             this.name = response.data.tName
-            this.gender = response.data.tGender
+            this.identity = '教师'
+            this.gender = response.data.tGender ? '男' : '女'
             this.title = response.data.tTitle
             if (response.data.avatarUrl) {
               this.avatarUrl = response.data.avatarUrl // 如果后端返回了新的头像URL，则更新原始的URL  
@@ -280,7 +282,7 @@ export default {
               // this.avatarBase64 = await this.convertUrlToBase64(this.avatarUrl);
               // this.avatarUrl = this.avatarBase64;
             }
-            console.log('info:', response.data)
+            console.log('perInfo:', response.data)
           }).catch((error) => {
             console.error('Error fetching profile info:', error)
           })
@@ -289,7 +291,8 @@ export default {
           { params: { sID: this.userID } })
           .then(async (response) => {
             this.name = response.data.sName
-            this.gender = response.data.sGender
+            this.identity = '学生'
+            this.gender = response.data.sGender ? '男' : '女'
             this.grade = response.data.sGrade
             this.sclass = response.data.sClass
             if (response.data.avatarUrl) {
@@ -359,7 +362,7 @@ export default {
     },
     fetchCourse() {//'https://apifoxmock.com/m1/5315127-4985126-default/api/get_course_list'
       console.log(this.userID)
-      if (this.identity === 1)
+      if (this.isTeacher === 1)
         this.axios.get('/api/course/teacher',
           { params: { tID: this.userID } })
           .then(response => {
@@ -395,11 +398,12 @@ export default {
           })
       console.log('courses:', this.courses)
     },
-    fetchNotice() {
-      this.axios.get('https://apifoxmock.com/m1/5315127-4985126-default/api/get_notice_list')
+    fetchNotice() {//'https://apifoxmock.com/m1/5315127-4985126-default/api/get_notice_list'
+      this.axios.get('/api/notice/getAll')
         .then(response => {
-          this.notice = response.data.notice
+          this.notice = response.data
         })
+      console.log('notice:', this.notice)
     },
     handleAvatarClick() {
       console.log('个人信息被点击')
@@ -420,21 +424,21 @@ export default {
       console.log('课程被点击:', course)
       this.$router.push({
         name: 'CourseDetail',
-        params: { courseId: course.cid },
+        params: { cid: course.cid },
         query: {
-          cid: course.cid,
+          cname: course.cname,
           cnumber: course.cnumber
         }
       })
     },
     handleNoticeClick(row) {
-      console.log('通知被点击:', row.time, row.title)
+      console.log('通知被点击:', row.cnTime, row.cnTitle)
       this.$router.push({
         name: 'NoticeDetail',
-        params: { noticeId: row.id },
+        params: { noticeId: row.cnID },
         query: {
-          noticeTime: row.time,
-          noticeTitle: row.title
+          noticeTime: row.cnTime,
+          noticeTitle: row.cnTitle
         }
       })
     },
@@ -478,7 +482,7 @@ export default {
         { params: { sID: this.userID } })
         .then(response => {
           this.courseSchedule = [
-            { time: '08:00-08:50\n09:00-9:50', '周一': response.data.mon1, '周二': response.data.tues1, '周三': response.data.wed1, '周四': response.data.thur1, '周五': response.data.fri1, '周六': response.data.sat1, '周日': response.data.sun1 },
+            { time: '08:00-08:50\n09:00-09:50', '周一': response.data.mon1, '周二': response.data.tues1, '周三': response.data.wed1, '周四': response.data.thur1, '周五': response.data.fri1, '周六': response.data.sat1, '周日': response.data.sun1 },
             { time: '10:10-11:00\n11:10-12:00', '周一': response.data.mon2, '周二': response.data.tues2, '周三': response.data.wed2, '周四': response.data.thur2, '周五': response.data.fri2, '周六': response.data.sat2, '周日': response.data.sun2 },
             { time: '', '周一': '', '周二': '', '周三': '', '周四': '', '周五': '', '周六': '', '周日': '' },
             { time: '', '周一': '', '周二': '', '周三': '', '周四': '', '周五': '', '周六': '', '周日': '' },

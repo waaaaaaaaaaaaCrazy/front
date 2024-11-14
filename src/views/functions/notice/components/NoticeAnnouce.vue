@@ -9,11 +9,11 @@
                 <el-form-item label="通知标题：" prop="title">
                     <el-input v-model="noticeForm.title" clearable></el-input>
                 </el-form-item>
-                <el-form-item label="接收群组：" prop="group">
+                <!-- <el-form-item label="接收群组：" prop="group">
                     <el-select v-model="noticeForm.group" placeholder="请选择接收群组">
                         <el-option v-for="group in groups" :key="group" :label="group" :value="group"></el-option>
                     </el-select>
-                </el-form-item>
+                </el-form-item> -->
                 <el-form-item label="发布日期：" prop="time">
                     <el-date-picker v-model="noticeForm.time" type="date" placeholder="选择发布日期"
                         :disabled-date="DatePickerOptions"></el-date-picker>
@@ -24,10 +24,10 @@
                 </el-form-item>
                 <el-form-item label="通知附件：">
                     <!-- https://apifoxmock.com/m1/5315127-4985126-default/api/upload_attachment -->
-                    <el-upload ref="upload" action="/api/attachment/upload"
-                        list-type="text" :on-success="handleUploadSuccess" :on-error="handleUploadError">
+                    <el-upload ref="upload" action="/api/attachment/upload" :data={uploadID:userID} list-type="text"
+                        :on-change="handleUploadChange" :on-success="handleUploadSuccess" :on-error="handleUploadError">
                         <el-button type="primary">上传附件</el-button>
-                        <div class="el-upload__tip" style="margin-left: 5px;">上传通知附件，单个文件最大2MB</div>
+                        <div class="el-upload__tip" style="margin-left: 5px;">上传通知附件</div>
                     </el-upload>
                 </el-form-item>
                 <el-form-item>
@@ -44,18 +44,18 @@
 export default {
     data() {
         return {
-            userID:sessionStorage.getItem('userID'),
+            userID: 1/*sessionStorage.getItem('userID')*/,
             noticeForm: {
                 title: '',
                 group: '',
                 time: '',
                 content: '',
-                attachments: [],
+                attachments: 0,
             },
             groups: [], // Array to hold group data
             rules: {
                 title: [{ required: true, message: '请输入通知标题', trigger: 'blur' }],
-                group: [{ required: true, message: '请选择接收群组', trigger: 'change' }],
+                //group: [{ required: true, message: '请选择接收群组', trigger: 'change' }],
                 time: [
                     { required: true, message: '请选择发布时间', validator: this.validateTime, trigger: 'change' }
                 ],
@@ -74,36 +74,49 @@ export default {
             }
         },
         handleUploadSuccess(response, file) {
-            this.noticeForm.attachments.push(response.url)
-            console.log(response.url)
+            this.noticeForm.attachments = response
+            console.log('data:', response, 'file:', file)
             this.$message.success(`${file.name} 上传成功`)
         },
         handleUploadError(err, file) {
             this.$message.error(`${file.name} 上传失败`)
         },
+        handleUploadChange(file, fileList) {
+            if (fileList.length > 1) {
+                fileList.splice(0, 1)
+            }
+        },
         submitForm(status) {
             this.$refs.noticeForm.validate(valid => {
                 if (valid) {
-                    this.axios({
-                        url: "https://apifoxmock.com/m1/5315127-4985126-default/api/submit_notice",               // 请求地址
+                    this.axios({//https://apifoxmock.com/m1/5315127-4985126-default/api/submit_notice
+                        url: "/api/notice/create",               // 请求地址
                         method: "post",                       // 请求方法
                         headers: {                            // 请求头
                             "Content-Type": "application/json",
                         },
-                        params: {                             // 请求参数
-                            userID:sessionStorage.getItem('userID'),
-                            title: this.noticeForm.title,
-                            group: this.noticeForm.group,
-                            time: this.noticeForm.time,
-                            content: this.noticeForm.content,
-                            status: status
+                        data: {                             // 请求参数
+                            ctID: this.userID,
+                            cnTitle: this.noticeForm.title,
+                            //group: this.noticeForm.group,
+                            cnTime: this.noticeForm.time,
+                            cnContent: this.noticeForm.content,
+                            status: status,
+                            attachment: this.noticeForm.attachments
                         },
                     })
                         .then((response) => {
-                            if (status === 'submit' && response.status === 200) {
-                                this.$message.success('通知提交成功')
-                            } else if (status === 'draft' && response.status === 200) {
-                                this.$message.success('草稿保存成功')
+                            console.log('通知提交：', response.data)
+                            if (status === 'submit') {
+                                this.$message({
+                                    message: response.data.message,
+                                    type: response.data.success ? 'success' : 'error',
+                                })
+                            } else {
+                                this.$message({
+                                    message: response.data.message,
+                                    type: response.data.success ? 'success' : 'error',
+                                })
                             }
                             this.hasInfo = false
                             this.resetForm()
@@ -144,17 +157,16 @@ export default {
                 })
         },
         initializeForm(info) {
-            console.log(info)
-            this.axios.get(`https://apifoxmock.com/m1/5315127-4985126-default/api/get_notice_draft`,///${info}
-                { params: { noticeId: info } })
+            console.log(info)//https://apifoxmock.com/m1/5315127-4985126-default/api/get_notice_draft/${info}
+            this.axios.get(`/api/notice/get/${info}`,
+                { params: { cnID: info } })
                 .then(response => {
                     // 将返回的数据填充到表单中
-                    this.noticeForm.title = response.data.title
+                    this.noticeForm.title = response.data.cnTitle
                     this.noticeForm.group = response.data.group
-                    this.noticeForm.time = response.data.time
-                    this.noticeForm.content = response.data.content
-
-                    this.initTime = response.data.time
+                    this.noticeForm.time = response.data.cnTime
+                    this.noticeForm.content = response.data.cnContent
+                    this.initTime = response.data.cnTime
                 })
                 .catch(error => {
                     console.error('Failed to fetch data:', error)
@@ -163,9 +175,9 @@ export default {
         },
     },
     created() {
-        this.fetchGroups()
+        //this.fetchGroups()
     },
-    
+
 };
 </script>
 

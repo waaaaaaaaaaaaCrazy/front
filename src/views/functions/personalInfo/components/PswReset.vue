@@ -59,7 +59,7 @@ export default {
         }
         return {
             userID: 1/*sessionStorage.getItem('userID')*/,
-            identity: 0/*sessionStorage.getItem('identity')*/,
+            isTeacher: 1/*sessionStorage.getItem('isTeacher')*/,
             resetPasswordForm: {
                 oldpsw: "",
                 newpsw: "",
@@ -85,7 +85,7 @@ export default {
                         },
                         params: {
                             IDnumber: this.userID,
-                            identity: this.identity,
+                            isTeacher: this.isTeacher,
                             oldPassword: this.resetPasswordForm.oldpsw,
                             newPassword: this.resetPasswordForm.password,
                         }

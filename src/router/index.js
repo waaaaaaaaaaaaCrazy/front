@@ -46,7 +46,7 @@ const routes = [
     meta: { title: '笔记集' }
   },
   {
-    path: '/course/:courseId',
+    path: '/course/:cid',
     name: 'CourseDetail',
     component: CourseDetail,
     meta: { title: '课程主页' }
