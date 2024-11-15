@@ -85,11 +85,11 @@
               <!-- <p><strong>未读通知:</strong> {{ unreadNotifications }}</p> -->
               <p @click="messageDialogVisible = !messageDialogVisible"><strong>未读课程消息:</strong> {{ unreadMessages }}</p>
             </div>
-            <el-dialog v-model="messageDialogVisible" title="未读课程消息" width="500">
+            <el-dialog v-model="messageDialogVisible" title="未读课程消息" width="500" align-center>
               <div>
                 <el-table :data="courseMessage">
-                  <el-table-column property="cname" label="课程名" />
-                  <el-table-column property="num" label="未读消息数" width="100" align="center" />
+                  <el-table-column property="cName" label="课程名" />
+                  <el-table-column property="totalNum" label="未读消息数" width="100" align="center" />
                 </el-table>
               </div>
             </el-dialog>
@@ -211,21 +211,21 @@ export default {
       currentWeb: '课程列表',
       logoImg: logoImg,
       userAvatar: defaultAvatarImg, // 用户头像URL
-      unreadMessages: 0, // 用户名
+      unreadMessages: 0, //未读课程消息数
       unreadNotifications: 0, // 未读通知数
       courseImg: defaultCourseImg,// 课程图片URL
 
       courseMessage: [
-        { cname: '专业课程综合实训III', num: 0 },
-        { cname: '用户界面设计与评价', num: 0 }
+        { cName: '专业课程综合实训III', totalNum: 0 },
+        { cName: '用户界面设计与评价', totalNum: 0 }
       ],
       courses: [ // 课程列表数据
         { image: defaultCourseImg, cname: '专业课程综合实训III', cid: 'P310002B', cnumber: '02' },
         { image: defaultCourseImg, cname: '用户界面设计与评价', cid: 'M410023B', cnumber: '01' },
       ],
       notice: [
-        { cnID: '1', cnTime: '2023-10-01', cnTitle: '通知1' },
-        { cnID: '2', cnTime: '2023-10-02', cnTitle: '通知2' }
+        { cnID: '1', snID: 0, cnTime: '2023-10-01', cnTitle: '通知1' },
+        { cnID: '2', snID: 0, cnTime: '2023-10-02', cnTitle: '通知2' }
       ],
 
       days: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
@@ -343,21 +343,21 @@ export default {
       return true
     },
 
-    fetchUnreadNum() {
+    fetchUnreadNum() {//'https://apifoxmock.com/m1/5315127-4985126-default/api/get_unread_num'
       console.log(this.userID)
-      this.axios.get('https://apifoxmock.com/m1/5315127-4985126-default/api/get_unread_num',
-        { params: { userID: this.userID } })
+      this.axios.get(`/api/studentNotice/messageNum/${this.userID}`,
+        { params: { sID: this.userID } })
         .then(response => {
-          this.unreadNotifications = response.data.unreadaNoticeNum,
-            this.unreadMessages = response.data.unreadaMessageNum
+          //this.unreadNotifications = response.data.unreadaNoticeNum,
+          this.unreadMessages = response.data
         })
     },
-    fetchCourseMessage() {
+    fetchCourseMessage() {//'https://apifoxmock.com/m1/5315127-4985126-default/api/get_course_message'
       console.log(this.userID)
-      this.axios.get('https://apifoxmock.com/m1/5315127-4985126-default/api/get_course_message',
-        { params: { userID: this.userID } })
+      this.axios.get(`/api/studentNotice/course/${this.userID}`,
+        { params: { sID: this.userID } })
         .then(response => {
-          this.courseMessage = response.data.courseMsg
+          this.courseMessage = response.data
         })
     },
     fetchCourse() {//'https://apifoxmock.com/m1/5315127-4985126-default/api/get_course_list'
@@ -399,10 +399,14 @@ export default {
       console.log('courses:', this.courses)
     },
     fetchNotice() {//'https://apifoxmock.com/m1/5315127-4985126-default/api/get_notice_list'
-      this.axios.get('/api/notice/getAll')
-        .then(response => {
-          this.notice = response.data
-        })
+      this.axios.get(`/api/notice/getAll/${this.userID}`,
+        { params: { sID: this.userID } }
+      ).then(response => {
+        this.notice = response.data.map(notice => ({
+          ...notice,
+          cnTime: notice.cnTime.replace(/T/g, ' ').replace(/.[\d]{3}Z/, ' ')
+        }))
+      })
       console.log('notice:', this.notice)
     },
     handleAvatarClick() {
@@ -433,6 +437,11 @@ export default {
     },
     handleNoticeClick(row) {
       console.log('通知被点击:', row.cnTime, row.cnTitle)
+      this.axios.put(`/api/studentNotice/update/${row.snID}`,
+        { params: { snID: row.snID } })
+        .then(res => {
+          console.log('updateMsg:', res.data)
+        })
       this.$router.push({
         name: 'NoticeDetail',
         params: { noticeId: row.cnID },

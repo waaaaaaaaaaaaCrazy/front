@@ -10,7 +10,14 @@
             <p v-if="showAttachment" style="margin: 0 50px 0 15px"><strong>附件: </strong>
                 <a :href="getAttachmentUrl()" @click.prevent="downloadAttachment">{{ notice.attachment.name }}</a>
             </p>
-            <p v-if="isTeacher" style="margin: 50px 50px 0 15px"><strong>未读学生数：</strong>{{ notice.number }}</p>
+            <el-collapse v-if="isTeacher" style="margin: 50px 50px 0 15px; font: bold;">
+                <el-collapse-item :title="unreadMsg" @click="handleUnreadClick" disabled="isCollapse">
+                    <el-table :data="unreadStudent.sID" highlight-current-row>
+                        <el-table-column fixed type="index" width="50px" />
+                        <el-table-column label="学号" sortable />
+                    </el-table>
+                </el-collapse-item>
+            </el-collapse>
         </el-card>
     </div>
 </template>
@@ -29,7 +36,10 @@ export default {
             isTeacher: 1/*sessionStorage.getItem('isTeacher')*/,
             notice: { attachment: {} },
             showAttachment: false,
-            attachmentUrl: null  // 用于存储生成的 Blob URL
+            attachmentUrl: null,  // 用于存储生成的 Blob URL
+            isCollapse: false,
+            unreadMsg: '未读学生数：',
+            unreadStudent: [{}]
         }
     },
     mounted() {
@@ -43,6 +53,7 @@ export default {
                 // 根据新的 ID 重新加载通知详情
                 this.notice.attachment = {}
                 this.fetchNoticeDetails(newId)
+                this.$router.go(0)
             }
         }
     },
@@ -52,7 +63,7 @@ export default {
             this.axios.get(`/api/notice/get/${this.noticeId}`,
                 { params: { cnID: this.noticeId } })
                 .then(response => {
-                    this.notice.time = response.data.cnTime
+                    this.notice.time = response.data.cnTime.replace(/T/g, ' ').replace(/.[\d]{3}Z/, ' ')
                     this.notice.title = response.data.cnTitle
                     this.notice.content = response.data.cnContent
                     if (response.data.attachment) {
@@ -77,27 +88,37 @@ export default {
                     { params: { cnID: this.noticeId } })
                     .then(response => {
                         console.log(response.data)
-                        this.notice.number = response.data
+                        this.unreadMsg = this.unreadMsg + response.data
+                        if(response.data === '0')
+                            this.isCollapse = true
                     })
         },
         generateAttachmentUrl(data) {
-            const blob = new Blob([data], { type: 'application/octet-stream' });
-            this.attachmentUrl = URL.createObjectURL(blob);
+            const blob = new Blob([data], { type: 'application/octet-stream' })
+            this.attachmentUrl = URL.createObjectURL(blob)
         },
         getAttachmentUrl() {
-            return this.attachmentUrl;
+            return this.attachmentUrl
         },
         downloadAttachment() {
             // 触发下载，如果需要可以添加额外的逻辑
-            const link = document.createElement('a');
-            link.href = this.attachmentUrl;
-            link.download = this.notice.attachment.name;
-            link.click();
+            const link = document.createElement('a')
+            link.href = this.attachmentUrl
+            link.download = this.notice.attachment.name
+            link.click()
         },
         beforeDestroy() {
             if (this.attachmentUrl) {
-                URL.revokeObjectURL(this.attachmentUrl);
+                URL.revokeObjectURL(this.attachmentUrl)
             }
+        },
+        handleUnreadClick() {
+            this.axios.get(`/api/studentNotice/unread/${this.noticeId}`,
+                { params: { cnID: this.noticeId } })
+                .then(response => {
+                    this.unreadStudent = response.data
+                })
+            console.log('unreadStudent:',this.unreadStudent)
         }
     }
 }

@@ -45,7 +45,7 @@ export default {
         return {
             defaultView: '',
             currentView: 'notice_detail',
-            info: null, // 用于存储传递给 NoticeAnnouce 的 id
+            info: null, // 用于存储传递给 NoticeAnnouce 的 cnID
 
             isTeacher:1/*sessionStorage.getItem('isTeacher')*/
         }
@@ -70,7 +70,7 @@ export default {
         },
         goToNoticeAnnouce(info) {
             // 在这里接收从 NoticeDrafts 组件传递过来的id，并更新 info
-            this.info = info;
+            this.info = info
             console.log('parent.notice:' + this.info)
             this.$refs.noticeAnnouce.hasInfo = true
             this.$refs.noticeAnnouce.initializeForm(info)

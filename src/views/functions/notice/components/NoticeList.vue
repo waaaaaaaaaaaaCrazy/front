@@ -30,12 +30,12 @@
                     </div>
                 </template> -->
             </el-table-column>
-            <el-table-column fixed="right" prop="tag" label="状态" width="250px" :filters="[
+            <el-table-column fixed="right" prop="isRead" label="状态" width="250px" :filters="[
                 { text: '已读', value: '已读' },
                 { text: '未读', value: '未读' },
             ]" :filter-method="filterTag" filter-placement="bottom-end">
                 <template #default="scope">
-                    <el-tag :type="scope.row.tag === '已读' ? 'primary' : 'warning'" disable-transitions>{{ scope.row.tag
+                    <el-tag :type="scope.row.isRead === '已读' ? 'primary' : 'warning'" disable-transitions>{{ scope.row.isRead
                         }}</el-tag>
                 </template>
             </el-table-column>
@@ -52,6 +52,8 @@ export default {
     },
     data() {
         return {
+            userID: 1/*sessionStorage.getItem('userID')*/,
+            isTeacher: 1/*sessionStorage.getItem('isTeacher')*/,
             searchTitle: '',
             filteredTableData: [],
             tableRef: null,
@@ -60,25 +62,25 @@ export default {
                     cnID: 1,
                     cnTime: '2016-05-03',
                     cnTitle: '通知1',
-                    tag: '已读',
+                    isRead: '已读',
                 },
                 {
                     cnID: 2,
                     cnTime: '2016-05-02',
                     cnTitle: '重要通知2',
-                    tag: '未读',
+                    isRead: '未读',
                 },
                 {
                     cnID: 3,
                     cnTime: '2016-05-04',
                     cnTitle: '紧急通知3',
-                    tag: '已读',
+                    isRead: '已读',
                 },
                 {
                     cnID: 4,
                     cnTime: '2016-05-01',
                     cnTitle: '日常通知4',
-                    tag: '未读',
+                    isRead: '未读',
                 },
             ],
         }
@@ -98,19 +100,18 @@ export default {
         },
         fetchNoticeList() {//https://apifoxmock.com/m1/5315127-4985126-default/api/get_notice_list
             console.log(sessionStorage.getItem('userID'))
-            this.axios.get('/api/notice/getAll', {
-                params: { userID: sessionStorage.getItem('userID') }
+            this.axios.get(`/api/notice/getAll/${this.userID}`,
+                { params: { sID: this.userID } }
+            ).then(response => {
+                const notices = response.data.map(notice => ({
+                    ...notice,
+                    cnTime: notice.cnTime.replace(/T/g, ' ').replace(/.[\d]{3}Z/, ' '),
+                    isRead: notice.isRead === '1' ? '已读' : '未读'
+                }))
+                this.tableData = notices
+                this.filteredTableData = notices // 更新 filteredTableData
+                console.log('Fetched data:', this.tableData)
             })
-                .then(response => {
-                    // 将布尔值转换为字符串
-                    const notices = response.data.map(notice => ({
-                        ...notice,
-                        tag: notice.tag ? '已读' : '未读'
-                    }))
-                    this.tableData = notices
-                    this.filteredTableData = notices // 更新 filteredTableData
-                    console.log('Fetched data:', this.tableData)
-                })
                 .catch(error => {
                     console.error('Error fetching notice list:', error)
                 })
@@ -122,7 +123,7 @@ export default {
             this.tableRef.clearFilter()
         },
         filterTag(value, row) {
-            return row.tag === value
+            return row.isRead === value
         },
         filterHandler(value, row, column) {
             const property = column.property
@@ -130,6 +131,11 @@ export default {
         },
         handleNoticeClick(row) {
             console.log('通知被点击:', row.cnTime, row.cnTitle)
+            this.axios.put(`/api/studentNotice/update/${row.snID}`,
+                        { params: { snID: row.snID } })
+                        .then(res => {
+                            console.log('updateMsg:',res.data)
+                        })
             this.$router.push({
                 name: 'NoticeDetail',
                 params: { noticeId: row.cnID },

@@ -10,7 +10,7 @@
             </el-button>
         </div>
         <!-- 草稿列表 -->
-        <el-table ref="tableRef" row-key="index" :data="filteredTableData" style="width: 100%; margin-left: 10px;"
+        <el-table ref="tableRef" row-key="index" :data="tableData" style="width: 100%; margin-left: 10px;"
             highlight-current-row>
             <el-table-column fixed type="index" width="50px" />
             <el-table-column prop="cnTime" label="日期" sortable width="300px" column-key="cnTime">
@@ -35,10 +35,10 @@ export default {
     },
     data() {
         return {
-            userID: sessionStorage.getItem('userID'),
+            userID: 1/*sessionStorage.getItem('userID')*/,
+            isTeacher: 1/*sessionStorage.getItem('isTeacher')*/,
 
             searchTitle: '',
-            filteredTableData: [],
             tableRef: null,
             tableData: [],
         }
@@ -58,19 +58,17 @@ export default {
         },
         fetchDraftList() {
             console.log(sessionStorage.getItem('userID'))
-            this.axios.get('/api/notice/getAll', {
-                params: { userID: sessionStorage.getItem('userID') }
+            this.axios.get(`/api/notice/getAll/${this.userID}`,
+                { params: { sID: this.userID } }
+            ).then(response => {
+                // 将布尔值转换为字符串
+                const notices = response.data.map(notice => ({
+                    ...notice,
+                    cnTime: notice.cnTime.replace(/T/g, ' ').replace(/.[\d]{3}Z/, ' ')
+                }))
+                this.tableData = notices
+                console.log('Fetched data:', this.tableData)
             })
-                .then(response => {
-                    // 将布尔值转换为字符串
-                    const notices = response.data.map(notice => ({
-                        ...notice,
-                        tag: notice.tag ? '已读' : '未读'
-                    }))
-                    this.tableData = notices
-                    this.filteredTableData = notices // 更新 filteredTableData
-                    console.log('Fetched data:', this.tableData)
-                })
                 .catch(error => {
                     console.error('Error fetching notice list:', error)
                 })
