@@ -8,7 +8,7 @@ module.exports = defineConfig({
     client: {
       overlay: false,
     },
-    // 代理服务器可以将路由中的指定前缀转发到指定的后端服务器中
+    //代理服务器可以将路由中的指定前缀转发到指定的后端服务器中
     proxy: {
       '/api': {
         target: 'http://localhost:8080', // 后端API地址

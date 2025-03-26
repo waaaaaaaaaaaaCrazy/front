@@ -106,7 +106,7 @@
           <el-row :gutter="20" style="margin-top: 10px;">
             <el-col v-for="(course, index) in courses" :key="index" :span="6" style="margin-bottom: 10px;">
               <el-card shadow="hover" @click="handleCourseClick(course)"
-                style="height: 100%; background-color: rgba(174, 205, 255, 0.6);">
+                       style="height: 100%; background-color: rgba(174, 205, 255, 0.6);">
                 <el-image class="course-image" fit="fill" :src="course.image" lazy />
                 <div class="course-info">
                   <p style="font-size: 15px"><strong>{{ course.cname }}</strong></p>
@@ -148,7 +148,7 @@
           </el-card>
           <el-card class="card-date" shadow="always" style="width: 100%;height: 40vh;"
             :body-style="{ padding: '0px !important' }">
-            <el-calendar style="width: 100%;height:100;" v-model="selectDate" @input="handleCalendarSelect" />
+            <el-calendar style="width: 100%;height:100vh;" v-model="selectDate" @input="handleCalendarSelect" />
             <el-dialog title="本日课程" :width="500" v-model="calendarDialogVisble">
               <div v-html="calendarPopContent" />
             </el-dialog>
@@ -180,6 +180,10 @@ import { Star, Notebook } from '@element-plus/icons-vue'
 import logoImg from '@/assets/logo.png';
 import defaultAvatarImg from '@/assets/avatar.jpg';
 import defaultCourseImg from '@/assets/course.jpg';
+import {localeContextKey} from "element-plus";
+
+
+
 
 export default {
   components: {
@@ -190,13 +194,18 @@ export default {
   props: {
     course: {
       type: Object,
-      required: true
+      required: true,
     },
+  },
+  computed: {
+    isteacher() {
+      return this.$route.query.isTeacher;
+    }
   },
   data() {
     return {
-      userID: 1/*sessionStorage.getItem('userID')*/,
-      isTeacher: 1/*sessionStorage.getItem('isTeacher')*/,
+      userID: this.$route.query.IDnumber,
+      isTeacher: localStorage.getItem('Isteacher'),
       name: '',
       identity: '',
       gender: '',
@@ -268,7 +277,7 @@ export default {
 
     async fetchInfo() {
       console.log(this.userID)/*'https://apifoxmock.com/m1/5315127-4985126-default/api/get_profile_info'  `/api/teacher/findByTID/${this.userID}`*/
-      if (this.isTeacher === 1)
+      if (this.isTeacher == 1)
         this.axios.get(`/api/teacher/findByTID/${this.userID}`,
           { params: { tID: this.userID } })
           .then(async (response) => {
@@ -358,11 +367,12 @@ export default {
         { params: { sID: this.userID } })
         .then(response => {
           this.courseMessage = response.data
+
         })
     },
     fetchCourse() {//'https://apifoxmock.com/m1/5315127-4985126-default/api/get_course_list'
       console.log(this.userID)
-      if (this.isTeacher === 1)
+      if (localStorage.getItem('Isteacher') == 1)
         this.axios.get('/api/course/teacher',
           { params: { tID: this.userID } })
           .then(response => {
@@ -425,16 +435,19 @@ export default {
       console.log('笔记被点击')
     },
     handleCourseClick(course) {
-      console.log('课程被点击:', course)
+      console.log('课程被点击:',course)
       this.$router.push({
-        name: 'CourseDetail',
-        params: { cid: course.cid },
+        params: { cid: course.cid},
         query: {
           cname: course.cname,
-          cnumber: course.cnumber
-        }
+          cnumber: course.cnumber,
+          IDnumber:this.userID
+        },
+        path:'/MainInterface'
       })
+
     },
+
     handleNoticeClick(row) {
       console.log('通知被点击:', row.cnTime, row.cnTitle)
       this.axios.put(`/api/studentNotice/update/${row.snID}`,

@@ -44,7 +44,7 @@
 export default {
     data() {
         return {
-            userID: 1/*sessionStorage.getItem('userID')*/,
+            userID: localStorage.getItem('IDnumber')/*sessionStorage.getItem('userID')*/,
             noticeForm: {
                 title: '',
                 group: '',

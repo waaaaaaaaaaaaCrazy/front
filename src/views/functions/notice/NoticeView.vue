@@ -47,7 +47,7 @@ export default {
             currentView: 'notice_detail',
             info: null, // 用于存储传递给 NoticeAnnouce 的 cnID
 
-            isTeacher:1/*sessionStorage.getItem('isTeacher')*/
+            isTeacher:localStorage.getItem('Isteacher')/*sessionStorage.getItem('isTeacher')*/
         }
     },
     mounted() {

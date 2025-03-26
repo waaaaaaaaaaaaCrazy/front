@@ -33,7 +33,7 @@ export default {
     },
     data() {
         return {
-            isTeacher: 1/*sessionStorage.getItem('isTeacher')*/,
+          isTeacher: localStorage.getItem('Isteacher')/*sessionStorage.getItem('isTeacher')*/,
             notice: { attachment: {} },
             showAttachment: false,
             attachmentUrl: null,  // 用于存储生成的 Blob URL

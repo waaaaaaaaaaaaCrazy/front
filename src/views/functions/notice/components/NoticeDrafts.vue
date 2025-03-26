@@ -35,8 +35,8 @@ export default {
     },
     data() {
         return {
-            userID: 1/*sessionStorage.getItem('userID')*/,
-            isTeacher: 1/*sessionStorage.getItem('isTeacher')*/,
+          userID: localStorage.getItem('IDnumber')/*sessionStorage.getItem('userID')*/,
+          isTeacher: localStorage.getItem('Isteacher')/*sessionStorage.getItem('isTeacher')*/,
 
             searchTitle: '',
             tableRef: null,
